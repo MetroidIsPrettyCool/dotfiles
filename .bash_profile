@@ -1,0 +1,3 @@
+startx
+
+[[ -f ~/.bashrc ]] && . ~/.bashrc

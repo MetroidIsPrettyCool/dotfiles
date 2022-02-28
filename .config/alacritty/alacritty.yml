@@ -1,0 +1,77 @@
+# Configuration for Alacritty, the GPU enhanced terminal emulator.
+
+window:
+  
+  opacity: 0.92
+
+  x: 5
+  y: 5
+
+font:
+  
+  normal:
+    family: Source Code Pro
+    style: Regular
+
+  bold:
+    family: Source Code Pro
+    style: Bold
+
+  italic:
+
+    family: Source Code Pro
+    style: Italic
+
+  bold_italic:
+
+    family: Source Code Pro
+    style: Bold Italic
+
+  size: 7
+
+selection:
+
+  save_to_clipboard: true
+
+dynamic_title: true
+
+cursor:
+
+  style: Block
+
+live_config_reload: true
+
+working_directory: ~
+
+# BEGIN ACE
+colors:
+  primary:
+    background: '0x22222d'
+    foreground: '0xd1dade'
+  cursor:
+    text:       '0x22222d'
+    cursor:     '0xd1dade'
+  normal:
+    black:      '0x22222d'
+    red:        '0x6A648E'
+    green:      '0x847B98'
+    yellow:     '0xA39F97'
+    blue:       '0xD4B59D'
+    magenta:    '0xEAD79C'
+    cyan:       '0xE4D6AA'
+    white:      '0xd1dade'
+  bright:
+    black:      '0x92989b'
+    red:        '0x6A648E'
+    green:      '0x847B98'
+    yellow:     '0xA39F97'
+    blue:       '0xD4B59D'
+    magenta:    '0xEAD79C'
+    cyan:       '0xE4D6AA'
+    white:      '0xd1dade'
+
+bell:
+  animation: EaseOutExpo
+  duration: 250
+  color: '0xd1dade'
+# END ACE
