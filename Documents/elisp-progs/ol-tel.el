@@ -1,11 +1,4 @@
 ;;; ol-tel.el --- Support for links to telephone numbers in Org mode
-(require 'ol)
-
-;;;###autoload
-(org-link-set-parameters "tel"
-                         :follow #'org-tel-open
-                         :export #'org-tel-export)
-
 (defun org-tel-open (path _)
   "Open the telephone number with xdg-open"
   (let ((url (format "tel:" path)))
@@ -21,6 +14,13 @@
       (`texinfo (format "@uref{%s,%s}" url desc))
       (`ascii (format "%s (%s)" desc url))
       (_ url))))
+
+(use-package org
+  :defer t
+  :config
+  (org-link-set-parameters "tel"
+                         :follow 'org-tel-open
+                         :export 'org-tel-export))
 
 (provide 'ol-tel)
 ;;; ol-tel.el ends here

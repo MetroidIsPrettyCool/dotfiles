@@ -426,7 +426,7 @@ pdflang={%L},\12 colorlinks = true,\12 urlcolor = blue,\12 linkcolor =
 blue,\12 citecolor = red\12}\12")
   (org-startup-indented t))
 
-(require 'ol-tel "~/Documents/elisp-progs/ol-tel.el")
+(load "~/Documents/elisp-progs/ol-tel.el")
 
 ;; ========== Raku... ==========
 (use-package raku-mode3
