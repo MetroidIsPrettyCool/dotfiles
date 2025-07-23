@@ -16,6 +16,8 @@
 ;;
 ;; ~use-package~ statements should follow this order:
 ;;
+;;   - ~:demand~
+;;
 ;;   - ~:load_path~
 ;;
 ;;   - ~:requires~
@@ -407,8 +409,6 @@ if it's empty"
 
 ;; ========== Org ==========
 (use-package org
-  :load-path "~/Documents/elisp-progs"
-  :requires ol-tel
   :custom
   (org-agenda-files nil)
   (org-agenda-loop-over-headlines-in-active-region nil)
@@ -426,8 +426,10 @@ pdflang={%L},\12 colorlinks = true,\12 urlcolor = blue,\12 linkcolor =
 blue,\12 citecolor = red\12}\12")
   (org-startup-indented t))
 
+(require 'ol-tel "~/Documents/elisp-progs/ol-tel.el")
+
 ;; ========== Raku... ==========
-(use-package raku-mode
+(use-package raku-mode3
   :custom (raku-indent-offset 8))
 
 ;; =============== Other Major Modes ===============
