@@ -1,0 +1,7 @@
+configuration {
+	      modi: "run,drun";
+	      font: "Source Code Pro 12";
+	      show-icons: true;
+	      kb-mode-next: "Hyper_L";
+}
+@theme "~/.cache/wal/colors-rofi-dark"

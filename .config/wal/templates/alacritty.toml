@@ -1,0 +1,57 @@
+general.live_config_reload = true
+
+[colors.bright]
+black = "0x{color8.strip}"
+blue = "0x{color4.strip}"
+cyan = "0x{color6.strip}"
+green = "0x{color2.strip}"
+magenta = "0x{color5.strip}"
+red = "0x{color1.strip}"
+white = "0x{color7.strip}"
+yellow = "0x{color3.strip}"
+
+[colors.cursor]
+cursor = "0x{foreground.strip}"
+text = "0x{background.strip}"
+
+[colors.normal]
+black = "0x{color0.strip}"
+blue = "0x{color4.strip}"
+cyan = "0x{color6.strip}"
+green = "0x{color2.strip}"
+magenta = "0x{color5.strip}"
+red = "0x{color1.strip}"
+white = "0x{color7.strip}"
+yellow = "0x{color3.strip}"
+
+[colors.primary]
+background = "0x{background.strip}"
+foreground = "0x{foreground.strip}"
+
+[cursor]
+style = "Block"
+
+[font]
+size = 10
+
+[font.bold]
+family = "Source Code Pro"
+style = "Bold"
+
+[font.bold_italic]
+family = "Source Code Pro"
+style = "Bold Italic"
+
+[font.italic]
+family = "Source Code Pro"
+style = "Italic"
+
+[font.normal]
+family = "Source Code Pro"
+style = "Regular"
+
+[selection]
+save_to_clipboard = true
+
+[window]
+opacity = 0.92
