@@ -12,13 +12,34 @@ wal -i ~/.cache/randback/*
 
 # copy generated files to their destinations
 [[ -f ~/.cache/wal/alacritty.toml ]]
-cp --force ~/.cache/wal/alacritty.toml ~/.config/alacritty/alacritty.toml
+if [[ -f ~/.config/alacritty/alacritty.toml ]]; then
+    rm ~/.config/alacritty/alacritty.toml
+elif [[ -L ~/.config/alacritty/alacritty.toml ]]; then
+    unlink ~/.config/alacritty/alacritty.toml
+else
+    exit 1
+fi
+cp ~/.cache/wal/alacritty.toml ~/.config/alacritty/alacritty.toml
 
 [[ -f ~/.cache/wal/colors.Xresources ]]
+if [[ -f ~/.Xresources ]]; then
+    rm ~/.Xresources
+elif [[ -L ~/.Xresources ]]; then
+    unlink ~/.Xresources
+else
+    exit 1
+fi
 cp --force  ~/.cache/wal/colors.Xresources ~/.Xresources
 xrdb -merge ~/.Xresources
 
 [[ -f ~/.cache/wal/dunstrc ]]
+if [[ -f ~/.config/dunst/dunstrc ]]; then
+    rm ~/.config/dunst/dunstrc
+elif [[ -L ~/.config/dunst/dunstrc ]]; then
+    unlink ~/.config/dunst/dunstrc
+else
+    exit 1
+fi
 cp  --force ~/.cache/wal/dunstrc ~/.config/dunst/dunstrc
 
 # ensure Firefox userChrome.css has been copied

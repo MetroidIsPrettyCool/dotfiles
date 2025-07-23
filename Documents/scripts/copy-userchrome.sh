@@ -16,7 +16,7 @@ if [[ ! -f ~/.mozilla/firefox/profiles.ini ]]; then
     printf "Unable to locate firefox profiles.ini, aborting!\n" 1>&2
     exit 1
 fi
-profiles=($(awk -f get_default_ff_profiles.awk ~/.mozilla/firefox/profiles.ini))
+profiles=($(awk -f "$(dirname $0)"'/get_default_ff_profiles.awk' ~/.mozilla/firefox/profiles.ini))
 
 # go through 'em all and run da script!
 for profile in "${profiles[@]}"; do
@@ -47,5 +47,12 @@ for profile in "${profiles[@]}"; do
 
     # copy colors.css
     [[ -f ~/.cache/wal/colors.css ]]
-    cp --force ~/.cache/wal/colors.css "${chrome_dir}/colors.css"
+    if [[ -f "${chrome_dir}/colors.css" ]]; then
+        rm "${chrome_dir}/colors.css"
+    elif [[ -L "${chrome_dir}/colors.css" ]]; then
+        unlink "${chrome_dir}/colors.css"
+    else
+        exit 1
+    fi
+    cp ~/.cache/wal/colors.css "${chrome_dir}/colors.css"
 done
