@@ -9,7 +9,7 @@ set -e
 #
 # kinda hacky, might wanna rewrite this as a systemd unit or something
 home_netctl_profile='home-home'
-if ! netctl is-active trogdor 1>/dev/null 2>/dev/null; then
+if ! netctl is-active "${home_netctl_profile}" 1>/dev/null 2>/dev/null; then
     $MY_SCRIPTS_DIR/wlanrestart.sh "${home_netctl_profile}"
 fi
 
