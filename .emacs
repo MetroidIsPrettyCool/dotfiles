@@ -92,8 +92,7 @@ There are two things you can do about this warning:
                   verilog-mode wc-mode which-key window-tool-bar xresources-theme yaml-mode))
  '(require-final-newline t)
  '(safe-local-variable-values
-   '((eval load-file "./shortcuts.el")
-     (org-use-property-inheritance . t) (org-html-inline-images)))
+   '((eval load-file "./shortcuts.el") (org-use-property-inheritance . t) (org-html-inline-images)))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    '((20 . "#aa322f") (40 . "#cb4b16") (60 . "#b58900") (80 . "#859900") (100 . "#2aa198") (120 . "#268bd2")
@@ -105,9 +104,7 @@ There are two things you can do about this warning:
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#0A0F16" :foreground "#e0e0e0" :inverse-video nil
-                         :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular
-                         :height 110 :width normal :foundry "ADBO" :family "Source Code Pro"))))
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#0A0F16" :foreground "#e0e0e0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 110 :width normal :foundry "ADBO" :family "Source Code Pro"))))
  '(fringe ((t (:background unspecified)))))
 
 ;; =============== Appearance ===============
@@ -292,6 +289,24 @@ There are two things you can do about this warning:
   (yas-reload-all))
 
 ;; =========== company ===========
+(defun check-expansion ()
+  (save-excursion
+    (if (looking-at "\\_>") t
+      (backward-char 1)
+      (if (looking-at "\\.") t
+        (backward-char 1)
+        (if (looking-at "::") t nil)))))
+
+(defun tab-indent-or-complete ()
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if (or (not yas/minor-mode)
+            (null (do-yas-expand)))
+        (if (check-expansion)
+            (company-complete-common)
+          (indent-for-tab-command)))))
+
 (use-package company
   :ensure t
   :custom
@@ -345,7 +360,8 @@ There are two things you can do about this warning:
 (use-package flycheck
   :ensure t
   :defer t
-  :hook ((flycheck-mode . flycheck-popup-tip-mode)))
+  ;; :hook ((flycheck-mode . flycheck-popup-tip-mode))
+  )
 
 ;; ========== column-number-mode ==========
 (column-number-mode t)
@@ -360,6 +376,16 @@ There are two things you can do about this warning:
   (lsp-enable-on-type-formatting nil))
 
 ;; =============== Minor-Minor Mode Inter-Configuration ===============
+
+;; ========== company & yasnippet ==========
+(defun company-yasnippet-or-completion ()
+  (interactive)
+  (or (do-yas-expand)
+      (company-complete-common)))
+
+(defun do-yas-expand ()
+  (let ((yas/fallback-behavior 'return-nil))
+    (yas/expand)))
 
 ;; =============== Per-Topic Major/Minor Mode Configuration ===============
 

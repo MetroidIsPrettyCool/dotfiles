@@ -1,0 +1,57 @@
+general.live_config_reload = true
+
+# [colors.bright]
+# black = "0xa18b54"
+# blue = "0x99344F"
+# cyan = "0x9E893F"
+# green = "0xFE4500"
+# magenta = "0x8B5C53"
+# red = "0xD15B0B"
+# white = "0xe6c779"
+# yellow = "0xEC6D03"
+
+# [colors.cursor]
+# cursor = "0xe6c779"
+# text = "0x490909"
+
+# [colors.normal]
+# black = "0x490909"
+# blue = "0x99344F"
+# cyan = "0x9E893F"
+# green = "0xFE4500"
+# magenta = "0x8B5C53"
+# red = "0xD15B0B"
+# white = "0xe6c779"
+# yellow = "0xEC6D03"
+
+# [colors.primary]
+# background = "0x490909"
+# foreground = "0xe6c779"
+
+[cursor]
+style = "Block"
+
+[font]
+size = 10
+
+[font.bold]
+family = "Source Code Pro"
+style = "Bold"
+
+[font.bold_italic]
+family = "Source Code Pro"
+style = "Bold Italic"
+
+[font.italic]
+family = "Source Code Pro"
+style = "Italic"
+
+[font.normal]
+family = "Source Code Pro"
+style = "Regular"
+
+[selection]
+save_to_clipboard = true
+
+[window]
+opacity = 0.92
