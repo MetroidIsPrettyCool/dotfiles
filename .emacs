@@ -108,9 +108,9 @@ There are two things you can do about this warning:
  '(package-selected-packages
    '(ace-flyspell ada-mode circe color-theme-sanityinc-solarized company counsel cuda-mode editorconfig eglot elpher erc
                   ewal faceup fireplace flycheck-popup-tip flymd frameshot glsl-mode gnuplot gnuplot-mode htmlize
-                  idlwave image-dired+ java-snippets leetcode lsp-ui magit mmm-mode nasm-mode org-contrib org-present
-                  php-mode processing-mode python rainbow-mode raku-mode rustic soap-client tramp use-package
-                  verilog-mode wc-mode which-key window-tool-bar xresources-theme yaml-mode))
+                  idlwave image-dired+ java-snippets leetcode lsp-ui magit mmm-mode nasm-mode org org-contrib
+                  org-present php-mode processing-mode python rainbow-mode raku-mode rustic soap-client tramp
+                  use-package verilog-mode wc-mode which-key window-tool-bar xresources-theme yaml-mode))
  '(require-final-newline t)
  '(safe-local-variable-values
    '((eval load-file "./shortcuts.el") (org-use-property-inheritance . t) (org-html-inline-images)))
