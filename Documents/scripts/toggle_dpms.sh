@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 dpms_enabled=$(xset q | sed -nE 's/[[:space:]]+DPMS is (Enabled|Disabled)/\1/p')
 

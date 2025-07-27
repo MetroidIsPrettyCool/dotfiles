@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 profile_name="${1}"
 if [[ -z "${1}" ]]; then

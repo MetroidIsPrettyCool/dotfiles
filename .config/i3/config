@@ -195,8 +195,11 @@ bindsym $mod+t exec --no-startup-id emacsclient --alternate-editor= --create-fra
 # ===== Misc. Script Shortcuts =====
 
 # for games with weird mouse wheel issues (KSP), inverts the scroll direction of my MX Ergo
-bindsym $mod+Home exec --no-startup-id bash $MY_SCRIPTS_DIR/toggle_mousewheel_direction.sh
+bindsym $mod+Home exec --no-startup-id bash "${MY_SCRIPTS_DIR}/toggle_mousewheel_direction.sh"
 
 # convenience shortcuts for reloading my xmodmap
 bindsym $mod+x exec --no-startup-id xmodmap ./.Xmodmap
 bindsym $mod+u exec --no-startup-id setxkbmap us
+
+# ===== Start Programs! =====
+exec --no-startup-id "${MY_SCRIPTS_DIR}/onstartup.sh"

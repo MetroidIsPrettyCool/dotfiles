@@ -44,6 +44,8 @@ eval $(gnome-keyring-daemon --start)
 export SSH_AUTH_SOCK
 export QT_QPA_PLATFORMTHEME=gtk2
 
-~/Documents/scripts/onstartup.sh &
+if [ -f $HOME/.profile ]; then
+    . ~/.profile
+fi
 
 exec i3

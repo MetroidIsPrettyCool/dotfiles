@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 # creates symbolic links from ~.config/userChrome.css~ to your Firefox's default profiles' ~/chrome/~ directories
 #

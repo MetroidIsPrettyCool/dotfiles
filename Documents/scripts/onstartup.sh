@@ -1,7 +1,7 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -x
 
-# intended to be run immediately after X starts to set the wallpaper, launch default applications, etc.
+# intended to be run after i3 starts to set the wallpaper, launch default applications, etc.
 
 # ==== VERIFY ALL IS WELL ====
 
@@ -22,8 +22,7 @@ fi
 $MY_SCRIPTS_DIR/themeback.sh
 
 # ==== START VARIOUS GUI-ONLY DAEMONS ====
-#
-# TODO: learn if these can be moved to system units, do so if they can.
+emacs --daemon # eeeeeeemacs
 dunst & # notification daemon
 solaar -w hide & # Logitech I/O device daemon
 blueberry-tray # application for managing Bluetooth devices

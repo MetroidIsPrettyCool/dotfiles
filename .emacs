@@ -43,6 +43,8 @@
 
 ;; ==================== Order-Explicit Global Stuff ====================
 
+;; =============== Put ~debug-on-*~ Calls Here ===============
+
 ;; =============== Enable Packages and Package Repos ===============
 (require 'package)
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
@@ -68,6 +70,24 @@ There are two things you can do about this warning:
 
 ;; (setq package-enable-at-startup nil)
 
+;; =============== Set env Vars ===============
+
+(defun mememe/clone-shell-env ()
+  "Set Emacs environment variables from the user's login shell."
+  (interactive)
+  (let ((env-output (shell-command-to-string "/usr/bin/bash -lc /usr/bin/env")))
+    (dolist (line (split-string env-output "\n" t))
+      (when (string-match "\\`\\([^=]+\\)=\\(.*\\)\\'" line)
+        (let ((var (match-string 1 line))
+              (val (match-string 2 line)))
+          (setenv var val)
+          ;; Also update exec-path if PATH changes
+          (when (string= var "PATH")
+            (setq exec-path (split-string val path-separator))))))))
+
+;; Optionally call it on startup
+(mememe/clone-shell-env)
+
 ;; =============== Misc. Customize ===============
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -82,6 +102,7 @@ There are two things you can do about this warning:
  '(delete-by-moving-to-trash t)
  '(explicit-shell-file-name "/bin/bash")
  '(global-text-scale-adjust-resizes-frames t)
+ '(help-enable-symbol-autoload t)
  '(indent-tabs-mode nil)
  '(package-install-upgrade-built-in t)
  '(package-selected-packages
@@ -204,48 +225,62 @@ There are two things you can do about this warning:
 ;; =============== Configuring Editor Behaviors ===============
 
 ;; ========== Delete Trailing Whitespace When Saving ==========
-(defvar delete-trailing-whitespace-exempt-modes
+(defvar mememe/delete-trailing-whitespace-exempt-modes
   '(python-mode)
-  "Major modes to exempt from `delete-trailing-whitespace'")
+  "Major modes to exempt from `mememe/delete-trailing-whitespace'")
 
 ;;;###autoload
-(defun delete-trailing-whitespace-unless-exempt ()
+(defun mememe/delete-trailing-whitespace-unless-exempt ()
   "Delete trailing whitespace, exempting any major modes defined in
-`delete-trailing-whitespace-exempt-modes'"
+`mememe/delete-trailing-whitespace-exempt-modes'"
   (interactive)
   (if (and
-       (not (member major-mode delete-trailing-whitespace-exempt-modes))
+       (not (member major-mode mememe/delete-trailing-whitespace-exempt-modes))
        (not (minibufferp)))
       (delete-trailing-whitespace)))
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace-unless-exempt)
+(add-hook 'before-save-hook 'mememe/delete-trailing-whitespace-unless-exempt)
 
-;; ========== Enable and Disable Built-In Minor Modes ==========
+;; ========== Configure Minor Built-Ins ==========
 
 ;; ===== fill-column =====
 (setq-default fill-column 120)
 
 (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
-;; ===== Disable Various Kiddy UI Elements =====
-(setq inhibit-startup-screen t)
-(set-scroll-bar-mode nil)
-(setq tool-bar-mode nil)
-(setq menu-bar-mode nil)
+;; ========== column-number-mode ==========
+(column-number-mode t)
+
+;; =========== cua ===========
+
+;; (cua-selection-mode t)
+
+;; ===== Disable Various UI Elements =====
+(use-package emacs
+  :custom
+  (inhibit-startup-screen t)
+  (scroll-bar-mode nil)
+  (tool-bar-mode nil)
+  (menu-bar-mode nil))
+
+;; (setq inhibit-startup-screen t)
+;; (set-scroll-bar-mode nil)
+;; (tool-bar-mode nil)
+;; (menu-bar-mode nil)
 
 ;; =============== Keybinds ===============
-;;
+
 ;; 'H' is the "hyper" key, not present on basically every PC keyboard ever made. and unused by everything i've ever seen
 ;; in Emacs, so it's pretty safe for user keybinds. you'll need to modify your keyboard layout, personally, i have left
 ;; control bound to ~Hyper_L~ (and capslock bound to ~Control_L~)
 
 ;; ========== Misc ==========
 
-;; (global-set-key (kbd "H-l") 'goto-line)
-(global-set-key (kbd "H-u") 'undo-only)
-(global-set-key (kbd "H-c") 'comment-region)
-(global-set-key (kbd "H-s") (lambda () (interactive) (insert "¯\\_(ツ)_/¯")))
-(global-set-key (kbd "H-r") 'query-replace-regexp)
+;; (keymap-global-set "H-l" 'goto-line)
+(keymap-global-set "H-u" 'undo-only)
+(keymap-global-set "H-c" 'comment-region)
+(keymap-global-set "H-s" (lambda () (interactive) (insert "¯\\_(ツ)_/¯")))
+(keymap-global-set "H-r" 'query-replace-regexp)
 
 ;; ========== "Missing" Opposites for Defaults ==========
 ;;
@@ -254,27 +289,36 @@ There are two things you can do about this warning:
 ;; ===== M-q =====
 
 ;;;###autoload
-(defun unfill-paragraph ()
+(defun mememe/unfill-paragraph ()
   (interactive)
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
 
 ;;;###autoload
-(defun unfill-region ()
+(defun mememe/unfill-region ()
   (interactive)
   (let ((fill-column (point-max)))
     (fill-region (region-beginning) (region-end) nil)))
 
-(global-set-key (kbd "M-Q") 'unfill-paragraph)
+(keymap-global-set "M-Q" 'mememe/unfill-paragraph)
 
 ;; ===== M-y =====
 
 ;;;###autoload
-(defun yank-pop-forwards (arg)
+(defun mememe/yank-pop-forwards (arg)
   (interactive "p")
   (yank-pop (- arg)))
 
-(global-set-key (kbd "M-Y") 'yank-pop-forwards)
+(keymap-global-set "M-Y" 'mememe/yank-pop-forwards)
+
+;; ===== C-SPC =====
+
+;;;###autoload
+(defun mememe/deactive-mark (arg)
+  (interactive "p")
+  (deactivate-mark arg))
+
+(keymap-global-set "C-S-SPC" 'mememe/deactive-mark)
 
 ;; ==================== Global Mode-Specific Config ====================
 
@@ -289,7 +333,7 @@ There are two things you can do about this warning:
   (yas-reload-all))
 
 ;; =========== company ===========
-(defun check-expansion ()
+(defun mememe/check-expansion ()
   (save-excursion
     (if (looking-at "\\_>") t
       (backward-char 1)
@@ -297,42 +341,42 @@ There are two things you can do about this warning:
         (backward-char 1)
         (if (looking-at "::") t nil)))))
 
-(defun tab-indent-or-complete ()
+(defun mememe/tab-indent-or-complete ()
   (interactive)
   (if (minibufferp)
       (minibuffer-complete)
     (if (or (not yas/minor-mode)
             (null (do-yas-expand)))
-        (if (check-expansion)
+        (if (mememe/check-expansion)
             (company-complete-common)
           (indent-for-tab-command)))))
 
 (use-package company
   :ensure t
   :custom
-  (company-idle-delay 0.5) ;; how long to wait until popup
+  (company-idle-delay 0.2) ;; how long to wait until popup
   ;; (company-begin-commands nil) ;; uncomment to disable popup
   :bind (:map company-mode-map
-	      ("<tab>". tab-indent-or-complete)
-	      ("TAB". tab-indent-or-complete)))
+	      ("<tab>". mememe/tab-indent-or-complete)
+	      ("TAB". mememe/tab-indent-or-complete)))
 
 ;; =========== display-line-numbers-mode ===========
-(defvar display-line-numbers-exempt-modes
+(defvar mememe/display-line-numbers-exempt-modes
   '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode inferior-python-mode fireplace-mode image-mode dun-mode
                magit-status-mode dired-mode tetris-mode rustic-compilation-mode)
-  "Major modes to exempt from `display-line-numbers-mode'")
+  "Major modes to exempt from `mememe/display-line-numbers-mode'")
 
-(defun display-line-numbers-unless-exempt (original-fun &rest args)
-  "Turn on line numbers, exempting any major modes defined in `display-line-numbers-exempt-modes'"
+(defun mememe/display-line-numbers-unless-exempt (original-fun &rest args)
+  "Turn on line numbers, exempting any major modes defined in `mememe/display-line-numbers-exempt-modes'"
   (if (and
-       (not (member major-mode display-line-numbers-exempt-modes))
+       (not (member major-mode mememe/display-line-numbers-exempt-modes))
        (not (minibufferp)))
       (apply original-fun args)))
 
 (use-package display-line-numbers
   :config
   (global-display-line-numbers-mode t)
-  (advice-add 'display-line-numbers--turn-on :around 'display-line-numbers-unless-exempt))
+  (advice-add 'display-line-numbers--turn-on :around 'mememe/display-line-numbers-unless-exempt))
 
 ;; =========== recentf ===========
 (use-package recentf
@@ -363,13 +407,6 @@ There are two things you can do about this warning:
   ;; :hook ((flycheck-mode . flycheck-popup-tip-mode))
   )
 
-;; ========== column-number-mode ==========
-(column-number-mode t)
-
-;; =========== cua ===========
-
-;; (cua-selection-mode t)
-
 ;; ========== LSP ==========
 (use-package lsp-mode
   :custom
@@ -378,12 +415,12 @@ There are two things you can do about this warning:
 ;; =============== Minor-Minor Mode Inter-Configuration ===============
 
 ;; ========== company & yasnippet ==========
-(defun company-yasnippet-or-completion ()
+(defun mememe/company-yasnippet-or-completion ()
   (interactive)
-  (or (do-yas-expand)
+  (or (mememe/do-yas-expand)
       (company-complete-common)))
 
-(defun do-yas-expand ()
+(defun mememe/do-yas-expand ()
   (let ((yas/fallback-behavior 'return-nil))
     (yas/expand)))
 
@@ -394,7 +431,7 @@ There are two things you can do about this warning:
 ;; ===== Header Files =====
 
 ;;;###autoload
-(defun insert-c-header-include-guard ()
+(defun mememe/insert-c-header-include-guard ()
   "automatically insert a template include guard into an open C header file
 if it's empty"
   (interactive)
@@ -410,8 +447,8 @@ if it's empty"
 (use-package cc-mode
   :ensure t
   :custom (c-basic-offset 4)
-  ;; :bind (:map c-mode-map ("C-c h" . insert-c-header-include-guard))
-  :hook (c-mode . insert-c-header-include-guard))
+  ;; :bind (:map c-mode-map ("C-c h" . mememe/insert-c-header-include-guard))
+  :hook (c-mode . mememe/insert-c-header-include-guard))
 
 ;; ========== Ada ==========
 (use-package ada-mode
@@ -427,8 +464,9 @@ if it's empty"
 
 (use-package rustic
   :ensure t
-  :custom (rustic-compile-backtrace "")
-  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
+  :custom (rustic-compile-backtrace "1")
+  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1")
+  )
 
 (use-package lsp-mode
   :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"]))
@@ -455,15 +493,27 @@ blue,\12 citecolor = red\12}\12")
 (load "~/Documents/elisp-progs/ol-tel.el")
 
 ;; ========== Raku... ==========
-(use-package raku-mode3
+(use-package raku-mode
   :custom (raku-indent-offset 8))
 
 ;; =============== Other Major Modes ===============
 
 ;; ========== dired ==========
 (use-package dired
-  :custom (dired-listing-switches "-al --human-readable")
-  :hook (dired-mode . dired-omit-mode))
+  :custom
+  (dired-use-ls-dired t)
+  (dired-maybe-use-globstar t)
+  (dired-vc-rename-file t)
+  (dired-listing-switches (string-join '("-l" ;; long output format, required
+                                         "--all"
+                                         ;; "--human-readable"
+                                         "--si" ;; same as ~--human-readable~, but powers of 10³ and not 2¹⁰
+                                         "--classify" ;; "append indicator (one of */=>@|) to entries"
+                                         )
+                                       " "))
+  :hook
+  (dired-mode . dired-extra-startup)
+  (dired-mode . dired-omit-mode))
 
 ;; ========== magit ==========
 (use-package magit

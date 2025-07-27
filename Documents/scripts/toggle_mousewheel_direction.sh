@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 # mouse_name='pointer:Logitech MX Ergo Multi-Device Trackball '
 mouse_name='pointer:Logitech MX Ergo'

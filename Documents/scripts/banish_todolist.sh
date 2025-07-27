@@ -1,9 +1,9 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 # make sure the daemon is actually running
 processes=$(ps -f -u $EUID) # -f is "do full-format listing" and -u is "userlist"
-until [[ $(grep --count '/usr/bin/emacs --daemon' <<< "${processes}") -ge 1 ]]; do
+until [[ $(grep --count 'emacs --daemon' <<< "${processes}") -ge 1 ]]; do
     sleep 0.1
     processes=$(ps -f -u $EUID)
 done
@@ -11,12 +11,12 @@ done
 emacsclient -c ~/Documents/todo.org &
 
 # wait for the window before trying to move it
-until [[ $(i3-msg -t subscribe '[ "window" ]' \
-              | grep --count '{.*"change":"new".*"container":{.*"name":".*GNU Emacs.*".*}.*}') -ge 1 ]]; do
-    sleep 0.1
+
+subscribe_result="$(i3-msg -t subscribe '[ "window" ]')"
+until [[ "$(jq '(.change == "new") and (.container.window_properties.class | test("^emacs$" ; "i"))' <<< "${subscribe_result}")" \
+                                                                                                      = 'true' ]]; do
+    subscribe_result="$(i3-msg -t subscribe '[ "window" ]')"
 done
 
-sleep 0.5
-
-i3-msg --quiet '[class="Emacs"] focus'
+i3-msg --quiet '[class='"$(jq '.container.window_properties.class' <<< "${subscribe_result}")"'] focus'
 i3-msg --quiet 'move window to workspace 2'

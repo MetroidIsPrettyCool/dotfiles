@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 # no longer works 'cause gocomics are all evil greedy bastards and forbade archive access to nonpaying members
 #
 # leaving this here as a memorial :(

@@ -1,5 +1,5 @@
-#!/bin/bash -x
-set -e
+#!/bin/bash
+set -euxo pipefail
 
 # set wallpaper
 # feh --bg-scale ~/.cache/randback/*
