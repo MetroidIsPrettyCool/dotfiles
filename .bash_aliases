@@ -22,9 +22,20 @@ alias paclean='sudo pacman -R $(pacman -Qdtq)'
 
 alias yay-remove='yay -Rns'
 
-alias dotfiles-git="/usr/bin/git --git-dir=$HOME/.dotfiles-repo/ --work-tree=${HOME}"
-
 # alias grub-mkconfig='grub-mkconfig -o /boot/grub/grub.cfg'
+
+# ===== DOTFILES =====
+drd=~/.dotfiles-repo/ # dotfiles repository directory
+
+alias dotfiles-git="/usr/bin/git --git-dir=${drd} --work-tree=${HOME}"
+
+function dotfiles-git-update {
+    set -euxo pipefail
+    dotfiles-git add -u
+    dotfiles-git commit -m "update $(date --universal)"
+    dotfiles-git push github master
+    set +euxo pipefail
+}
 
 # ==== SHORT NAMES FOR NON-PATH EXECUTABLES ====
 alias java8=/usr/lib/jvm/jre1.8.0_451/bin/java

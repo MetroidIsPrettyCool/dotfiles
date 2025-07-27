@@ -16,13 +16,15 @@
 ;;
 ;; ~use-package~ statements should follow this order:
 ;;
-;;   - ~:demand~
-;;
 ;;   - ~:load_path~
+;;
+;;   - ~:ensure~
 ;;
 ;;   - ~:requires~
 ;;
-;;   - ~:ensure~
+;;   - ~:after~
+;;
+;;   - ~:demand~
 ;;
 ;;   - ~:defer~
 ;;
@@ -64,29 +66,23 @@ There are two things you can do about this warning:
 ;; init
 (package-initialize)
 
-;; i have no memory of why this is set to nil. probably because i copy-pasted it without any real understanding
-;;
-;; leaving it commented in case there really was a good reason to do so
-
-;; (setq package-enable-at-startup nil)
-
 ;; =============== Set env Vars ===============
 
-(defun mememe/clone-shell-env ()
-  "Set Emacs environment variables from the user's login shell."
-  (interactive)
-  (let ((env-output (shell-command-to-string "/usr/bin/bash -lc /usr/bin/env")))
-    (dolist (line (split-string env-output "\n" t))
-      (when (string-match "\\`\\([^=]+\\)=\\(.*\\)\\'" line)
-        (let ((var (match-string 1 line))
-              (val (match-string 2 line)))
-          (setenv var val)
-          ;; Also update exec-path if PATH changes
-          (when (string= var "PATH")
-            (setq exec-path (split-string val path-separator))))))))
+;; (defun mememe/clone-shell-env ()
+;;   "Set Emacs environment variables from the user's login shell."
+;;   (interactive)
+;;   (let ((env-output (shell-command-to-string "/usr/bin/bash -lc /usr/bin/env")))
+;;     (dolist (line (split-string env-output "\n" t))
+;;       (when (string-match "\\`\\([^=]+\\)=\\(.*\\)\\'" line)
+;;         (let ((var (match-string 1 line))
+;;               (val (match-string 2 line)))
+;;           (setenv var val)
+;;           ;; Also update exec-path if PATH changes
+;;           (when (string= var "PATH")
+;;             (setq exec-path (split-string val path-separator))))))))
 
-;; Optionally call it on startup
-(mememe/clone-shell-env)
+;; ;; Optionally call it on startup
+;; (mememe/clone-shell-env)
 
 ;; =============== Misc. Customize ===============
 (custom-set-variables
@@ -131,10 +127,10 @@ There are two things you can do about this warning:
 ;; =============== Appearance ===============
 
 ;; ========== Make Emacs /Slightly/ Transparent ==========
-(set-frame-parameter (selected-frame) 'alpha 90)
-(add-to-list 'default-frame-alist '(alpha . 90))
+(set-frame-parameter (selected-frame) 'alpha-background 90)
+(add-to-list 'default-frame-alist '(alpha-background . 90))
 
-;; ========== Override Default Font Emoji ==========
+;; ========== Setup Default Font For Emoji ==========
 (let ((blobmoji-emoji '(;; Letterlike Symbols (select sub-ranges)
                         ?ℹ
 
@@ -464,6 +460,7 @@ if it's empty"
 
 (use-package rustic
   :ensure t
+  :after (lsp-mode inheritenv eglot polymode dash flycheck flymake jsonrpc)
   :custom (rustic-compile-backtrace "1")
   :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1")
   )
@@ -490,7 +487,8 @@ pdflang={%L},\12 colorlinks = true,\12 urlcolor = blue,\12 linkcolor =
 blue,\12 citecolor = red\12}\12")
   (org-startup-indented t))
 
-(load "~/Documents/elisp-progs/ol-tel.el")
+(with-eval-after-load 'org
+  (load-file "~/Documents/elisp-progs/ol-tel.el"))
 
 ;; ========== Raku... ==========
 (use-package raku-mode
