@@ -33,12 +33,12 @@ picom & # compositor
 xcowfortune &
 
 # ==== START SYSTEM INFORMATION BARS ====
-$MY_SCRIPTS_DIR/launch_polybar.sh &
+$MY_SCRIPTS_DIR/launch-polybar.sh &
 
 # ==== START DEFAULT APPLICATIONS ====
 vlc & # for media, assigned to workspace 9 in my i3 config
 discord & # for IM, assigned to workspace 10 in my i3 config
-$MY_SCRIPTS_DIR/launch_thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
+$MY_SCRIPTS_DIR/launch-thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
 
 # we can only run one of these at a time, as they need to have exclusive access to `i3-msg` in order to move their
 # eponymous applications to their destination workspaces without outright assigning their classes
@@ -46,9 +46,9 @@ $MY_SCRIPTS_DIR/launch_thunderbird.sh & # for mail, assigned to workspace 8 in m
 # TODO: figure out if I can just assign them temporarily and remove this exclusive access problem
 
 # Emacs client with org-mode TODO list open, auto-moved to workspace 2 by the script
-timeout 15s $MY_SCRIPTS_DIR/banish_todolist.sh
+timeout 15s $MY_SCRIPTS_DIR/banish-todolist.sh
 # Firefox web browser, auto-moved to workspace 1 by the script
-$MY_SCRIPTS_DIR/banish_firefox.sh
+$MY_SCRIPTS_DIR/banish-firefox.sh
 
 # ==== FINAL TOUCHES ====
 i3-msg --quiet 'workspace 1'

@@ -3,12 +3,12 @@ set -euxo pipefail
 
 # make sure the daemon is actually running
 processes=$(ps -f -u $EUID) # -f is "do full-format listing" and -u is "userlist"
-until [[ $(grep --count 'emacs --daemon' <<< "${processes}") -ge 1 ]]; do
+until [[ $(grep --extended-regexp --count 'emacs --daemon$' <<< "${processes}") -ge 1 ]]; do
     sleep 0.1
     processes=$(ps -f -u $EUID)
 done
 
-emacsclient -c ~/Documents/todo.org &
+emacsclient --create-frame ~/Documents/todo.org &
 
 # wait for the window before trying to move it
 

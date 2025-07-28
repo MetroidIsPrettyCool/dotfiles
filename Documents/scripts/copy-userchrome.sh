@@ -16,7 +16,7 @@ if [[ ! -f ~/.mozilla/firefox/profiles.ini ]]; then
     printf "Unable to locate firefox profiles.ini, aborting!\n" 1>&2
     exit 1
 fi
-profiles=($(awk -f "$(dirname $0)"'/get_default_ff_profiles.awk' ~/.mozilla/firefox/profiles.ini))
+profiles=($(awk -f "$(dirname $0)"'/get-default-ff-profiles.awk' ~/.mozilla/firefox/profiles.ini))
 
 # go through 'em all and run da script!
 for profile in "${profiles[@]}"; do

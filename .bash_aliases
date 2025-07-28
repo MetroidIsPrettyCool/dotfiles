@@ -12,7 +12,7 @@ alias ping='ping 8.8.8.8'
 
 alias alsamixer='alsamixer -c 0'
 
-alias rm=$MY_SCRIPTS_DIR/rm_warning.sh
+alias rm=$MY_SCRIPTS_DIR/rm-warning.sh
 
 # ==== ALTERNATE NAMES FOR COMMON ARGUMENTS  ====
 alias la='ls -A'
@@ -44,4 +44,4 @@ alias javac8=/usr/lib/jvm/java-8-openjdk/bin/javac
 alias script-grubinstall=$MY_SCRIPTS_DIR/grubinstall.sh
 alias script-ytmp3=$MY_SCRIPTS_DIR/ytmp3.sh
 alias script-update-system=$MY_SCRIPTS_DIR/update-system.sh
-alias script-manage-orphan-tilde-files=$MY_SCRIPTS_DIR/manage_orphan_tilde_files.sh
+alias script-manage-orphan-tilde-files=$MY_SCRIPTS_DIR/manage-orphan-tilde-files.sh

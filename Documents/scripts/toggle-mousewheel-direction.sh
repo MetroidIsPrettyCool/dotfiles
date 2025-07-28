@@ -5,7 +5,7 @@ set -euxo pipefail
 mouse_name='pointer:Logitech MX Ergo'
 mouse_props=$(xinput list-props "${mouse_name}" | tail --lines=+2) # +2 means all but the first line (1)
 
-# note that xinput list-props will prepend a tab to all output lines, so $1 will be empty
+# note that xinput list-props will prefix a tab to all output lines, so $1 will be empty
 #
 # yes i know about awk -F, i prefer to take the verbose route on purpose when writing scripts because i know that in a
 # week i'll have no clue what any given single-letter flag means

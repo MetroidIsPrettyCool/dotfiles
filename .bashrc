@@ -25,9 +25,9 @@ if [[ -f ~/.bash_aliases ]]; then
 fi
 
 if [[ ! ( -v INSIDE_EMACS || $(tty) = /dev/tty1 ) ]]; then
-    $MY_SCRIPTS_DIR/my_cowfortune.sh | lolcat
+    $MY_SCRIPTS_DIR/my-cowfortune.sh | lolcat
 elif [[ -v INSIDE_EMACS ]]; then
-    $MY_SCRIPTS_DIR/my_cowfortune.sh
+    $MY_SCRIPTS_DIR/my-cowfortune.sh
 fi
 
 # [[ ! -v INSIDE_EMACS ]] && printf "\a"
