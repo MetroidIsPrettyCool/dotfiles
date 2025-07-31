@@ -1,10 +1,5 @@
 # -*- mode: shell-script; -*-
 
-# ==== SMALL FUNCTIONS ====
-function cl {
-    cd "$*" && ls -Al
-}
-
 # ==== DEFAULT ARGUMENTS ====
 alias ls='ls --color=auto'
 
@@ -45,3 +40,8 @@ alias script-grubinstall=$MY_SCRIPTS_DIR/grubinstall.sh
 alias script-ytmp3=$MY_SCRIPTS_DIR/ytmp3.sh
 alias script-update-system=$MY_SCRIPTS_DIR/update-system.sh
 alias script-manage-orphan-tilde-files=$MY_SCRIPTS_DIR/manage-orphan-tilde-files.sh
+
+# ==== MISC SMALL FUNCTIONS ====
+function cl {
+    cd "$*" && ls -Al
+}
