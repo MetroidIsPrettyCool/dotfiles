@@ -43,5 +43,6 @@ alias script-manage-orphan-tilde-files=$MY_SCRIPTS_DIR/manage-orphan-tilde-files
 
 # ==== MISC SMALL FUNCTIONS ====
 function cl {
-    cd "$*" && ls -Al
+    cd "$*"
+    ls --color=auto -Al
 }

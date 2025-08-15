@@ -104,12 +104,16 @@ There are two things you can do about this warning:
  '(package-selected-packages
    '(ace-flyspell ada-mode circe color-theme-sanityinc-solarized company counsel cuda-mode editorconfig eglot elpher erc
                   ewal faceup fireplace flycheck-popup-tip flymd frameshot glsl-mode gnuplot gnuplot-mode htmlize
-                  idlwave image-dired+ java-snippets leetcode lsp-ui magit mmm-mode nasm-mode org org-contrib
+                  idlwave image-dired+ inheritenv java-snippets leetcode lsp-ui magit mmm-mode nasm-mode org org-contrib
                   org-present php-mode processing-mode python rainbow-mode raku-mode rustic soap-client tramp
-                  use-package verilog-mode wc-mode which-key window-tool-bar xresources-theme yaml-mode))
+                  use-package verilog-mode visual-fill-column wc-mode which-key window-tool-bar xresources-theme
+                  yaml-mode))
  '(require-final-newline t)
  '(safe-local-variable-values
-   '((eval load-file "./shortcuts.el") (org-use-property-inheritance . t) (org-html-inline-images)))
+   '((eval buffer-face-mode t) (eval setq buffer-face-mode-face '(:family "Mojang"))
+     (eval remove-hook 'before-save-hook 'mememe/delete-trailing-whitespace-unless-exempt)
+     (eval display-fill-column-indicator-mode t) (eval load-file "./shortcuts.el") (org-use-property-inheritance . t)
+     (org-html-inline-images)))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
    '((20 . "#aa322f") (40 . "#cb4b16") (60 . "#b58900") (80 . "#859900") (100 . "#2aa198") (120 . "#268bd2")
@@ -278,8 +282,18 @@ There are two things you can do about this warning:
 (keymap-global-set "H-s" (lambda () (interactive) (insert "¯\\_(ツ)_/¯")))
 (keymap-global-set "H-r" 'query-replace-regexp)
 
+;; ========== "Better" Versions of Default Keybinds ==========
+
+;; ====== ibuffer Instead of list-buffers ======
+(use-package ibuffer
+  :bind ("C-x C-b" . ibuffer))
+
+;; ===== counsel-unicode-char Instead of insert-char =====
+(use-package counsel
+  :bind ("C-x 8 RET" . counsel-unicode-char))
+
 ;; ========== "Missing" Opposites for Defaults ==========
-;;
+
 ;; all generally just the previous keybind+shift
 
 ;; ===== M-q =====
@@ -342,7 +356,7 @@ There are two things you can do about this warning:
   (if (minibufferp)
       (minibuffer-complete)
     (if (or (not yas/minor-mode)
-            (null (do-yas-expand)))
+            (null (mememe/do-yas-expand)))
         (if (mememe/check-expansion)
             (company-complete-common)
           (indent-for-tab-command)))))
@@ -384,10 +398,6 @@ There are two things you can do about this warning:
   :config
   (recentf-mode t)
   (run-at-time nil (* 5 60) 'recentf-save-list))
-
-;; =========== ibuffer ===========
-(use-package ibuffer
-  :bind ("C-x C-b" . ibuffer))
 
 ;; =========== flyspell ===========
 (use-package flycheck
@@ -462,8 +472,7 @@ if it's empty"
   :ensure t
   :after (lsp-mode inheritenv eglot polymode dash flycheck flymake jsonrpc)
   :custom (rustic-compile-backtrace "1")
-  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1")
-  )
+  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
 
 (use-package lsp-mode
   :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"]))

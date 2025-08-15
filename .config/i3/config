@@ -201,5 +201,8 @@ bindsym $mod+Home exec --no-startup-id bash "${MY_SCRIPTS_DIR}/toggle-mousewheel
 bindsym $mod+x exec --no-startup-id xmodmap ./.Xmodmap
 bindsym $mod+u exec --no-startup-id setxkbmap us
 
+# paste from clipboard with paste-xdotool.sh
+bindsym $mod+p exec --no-startup-id bash -c "xclip -out -selection clipboard | \"${MY_SCRIPTS_DIR}/paste-xdotool.sh\""
+
 # ===== Start Programs! =====
 exec --no-startup-id "${MY_SCRIPTS_DIR}/onstartup.sh"
