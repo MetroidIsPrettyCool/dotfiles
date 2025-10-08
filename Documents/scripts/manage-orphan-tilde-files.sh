@@ -41,7 +41,7 @@ done
 
 if [[ ! -z "${unknown_arg}" ]]; then
     printf "error: unknown argument: %s\n" "${unknown_arg}"
-    return 1
+    exit 1
 fi
 
 if [[ "${display_help_instead}" = "true" ]]; then
@@ -54,7 +54,7 @@ flags:
 
     -c COMMAND | --command COMMAND :: change the command to execute per-orphan (default is echo)\n"
 
-    return 1
+    exit
 fi
 
 # ==== FIND ====

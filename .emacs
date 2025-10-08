@@ -49,19 +49,10 @@
 
 ;; =============== Enable Packages and Package Repos ===============
 (require 'package)
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (proto (if no-ssl "http" "https")))
-  (when no-ssl (warn "\
-Your version of Emacs does not support SSL connections,
-which is unsafe because it allows man-in-the-middle attacks.
-There are two things you can do about this warning:
-1. Install an Emacs version that does support SSL and be safe.
-2. Remove this warning from your init file so you won't see it again."))
-  ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
-  ;; and `package-pinned-packages`. Most users will not need or want to do this.
-  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
+;; and `package-pinned-packages`. Most users will not need or want to do this.
+;;(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
 ;; init
 (package-initialize)
@@ -92,7 +83,8 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-enabled-themes '(wombat))
  '(custom-safe-themes
-   '("4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
+   '("6819104c5f7d70485b32c10323aa396806d282fcee5b707e462bf3d156f44c39"
+     "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
      "015a6f06366233b8f0d0a06af4aa7d8aadea126e2d70caa2422a3f173ee990ec"
      "e5494adf200eeff1505839672150dde6053e086869189c381b1ce9b792dda3a8" default))
  '(delete-by-moving-to-trash t)
@@ -100,17 +92,25 @@ There are two things you can do about this warning:
  '(global-text-scale-adjust-resizes-frames t)
  '(help-enable-symbol-autoload t)
  '(indent-tabs-mode nil)
+ '(org-babel-tangle-lang-exts
+   '(("awk" . "awk") ("clojurescript" . "cljs") ("clojure" . "clj") ("fortran" . "F90") ("groovy" . "groovy")
+     ("haskell" . "hs") ("java" . "java") ("julia" . "jl") ("latex" . "tex") ("LilyPond" . "ly") ("lisp" . "lisp")
+     ("lua" . "lua") ("maxima" . "max") ("ocaml" . "ml") ("perl" . "pl") ("processing" . "pde") ("python" . "py")
+     ("ruby" . "rb") ("sed" . "sed") ("abc" . "abc") ("csharp" . "cs") ("io" . "io") ("mathomatic" . "math")
+     ("picolisp" . "l") ("stata" . "do") ("tcl" . "tcl") ("vala" . "vala") ("vbnet" . "vb") ("D" . "d") ("C++" . "cpp")
+     ("rustic" . "rs") ("emacs-lisp" . "el") ("elisp" . "el") ("nasm" . "s")))
  '(package-install-upgrade-built-in t)
  '(package-selected-packages
    '(ace-flyspell ada-mode circe color-theme-sanityinc-solarized company counsel cuda-mode editorconfig eglot elpher erc
-                  ewal faceup fireplace flycheck-popup-tip flymd frameshot glsl-mode gnuplot gnuplot-mode htmlize
-                  idlwave image-dired+ inheritenv java-snippets leetcode lsp-ui magit mmm-mode nasm-mode org org-contrib
-                  org-present php-mode processing-mode python rainbow-mode raku-mode rustic soap-client tramp
-                  use-package verilog-mode visual-fill-column wc-mode which-key window-tool-bar xresources-theme
-                  yaml-mode))
+                  ewal faceup fireplace flycheck-popup-tip flymd frameshot git-modes glsl-mode gnuplot gnuplot-mode
+                  htmlize idlwave image-dired+ inheritenv java-snippets kotlin-mode leetcode lsp-ui magit mmm-mode
+                  nasm-mode org org-contrib org-present php-mode processing-mode python rainbow-mode raku-mode rustic
+                  soap-client tramp transient use-package verilog-mode visual-fill-column wc-mode which-key
+                  window-tool-bar xresources-theme yaml-mode))
  '(require-final-newline t)
  '(safe-local-variable-values
-   '((eval buffer-face-mode t) (eval setq buffer-face-mode-face '(:family "Mojang"))
+   '((eval load-file (concat (car (dir-locals-find-file ".")) ".emacs/shortcuts.el")) (eval buffer-face-mode t)
+     (eval setq buffer-face-mode-face '(:family "Mojang"))
      (eval remove-hook 'before-save-hook 'mememe/delete-trailing-whitespace-unless-exempt)
      (eval display-fill-column-indicator-mode t) (eval load-file "./shortcuts.el") (org-use-property-inheritance . t)
      (org-html-inline-images)))
@@ -470,7 +470,6 @@ if it's empty"
 
 (use-package rustic
   :ensure t
-  :after (lsp-mode inheritenv eglot polymode dash flycheck flymake jsonrpc)
   :custom (rustic-compile-backtrace "1")
   :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
 
@@ -490,10 +489,18 @@ if it's empty"
     ("" "wrapfig" nil nil) ("" "rotating" nil nil) ("normalem" "ulem" t nil) ("" "amsmath" t nil) ("" "amssymb" t nil)
     ("" "capt-of" nil nil) ("" "hyperref" nil nil) ("" "siunitx" nil nil)))
   (org-latex-hyperref-template
-   "\\hypersetup{\12 pdfauthor={%a},\12 pdftitle={%t},\12
-pdfkeywords={%k},\12 pdfsubject={%d},\12 pdfcreator={%c}, \12
-pdflang={%L},\12 colorlinks = true,\12 urlcolor = blue,\12 linkcolor =
-blue,\12 citecolor = red\12}\12")
+"\\hypersetup{
+ pdfauthor={%a},
+ pdftitle={%t},
+ pdfkeywords={%k},
+ pdfsubject={%d},
+ pdfcreator={%c},
+ pdflang={%L},
+ colorlinks = true,
+ urlcolor = blue,
+ linkcolor = blue,
+ citecolor = red}
+")
   (org-startup-indented t))
 
 (with-eval-after-load 'org
@@ -506,6 +513,39 @@ blue,\12 citecolor = red\12}\12")
 ;; =============== Other Major Modes ===============
 
 ;; ========== dired ==========
+
+;; ;;;###autoload
+;; (defun mememe/dired-omitted-p (file)
+;;   "Return non-nil if FILE would be omitted by `dired-omit-mode'."
+;;   (require 'dired-x)
+;;   (let* ((name (file-name-nondirectory file))
+;;          (omit-re dired-omit-files))
+;;     (or
+;;      (and omit-re (string-match-p omit-re name))
+;;      (and dired-omit-extensions
+;;           (not (member (file-name-extension name t)
+;;                        dired-omit-extensions))))))
+
+;; ;;;###autoload
+;; (defun mememe/dired-omit-auto ()
+;;   "Enable `dired-omit-mode' IFF there's at least one file that wouldn't be omitted"
+;;   (interactive)
+;;   (require 'dired-x)
+;;   (let ((found-visible nil))
+;;     (save-excursion
+;;       (goto-char (point-min))
+;;       (while (and (not found-visible) (not (eobp)))
+;;         (when (dired-next-line 1)
+;;           (let ((file (dired-get-filename nil t)))
+;;             (message "omit-auto says: %s %s" file (mememe/dired-omitted-p file))
+;;             (when (and file (mememe/dired-omitted-p file))
+;;               (setq found-visible t))))))
+;;     (when found-visible
+;;       (dired-omit-mode))))
+
+(use-package dired-x
+  :after (dired))
+
 (use-package dired
   :custom
   (dired-use-ls-dired t)
@@ -520,7 +560,8 @@ blue,\12 citecolor = red\12}\12")
                                        " "))
   :hook
   (dired-mode . dired-extra-startup)
-  (dired-mode . dired-omit-mode))
+  ;; (dired-mode . mememe/dired-omit-auto)
+  )
 
 ;; ========== magit ==========
 (use-package magit
@@ -530,3 +571,18 @@ blue,\12 citecolor = red\12}\12")
 ;; ========== man ==========
 (use-package man
   :custom (Man-notify-method 'pushy))
+
+;; ==================== Misc. Unbound Convenience Functions ====================
+(defun mememe/revert-buffers-in-directory (dir &optional recursive)
+  "Revert all file-visiting buffers under DIR.
+If RECURSIVE is non-nil, include subdirectories."
+  (interactive "DDirectory: \nP")
+  (let ((dir (file-name-as-directory (expand-file-name dir))))
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (let ((fname (buffer-file-name buf)))
+          (when (and fname
+                     (string-prefix-p dir (file-name-directory fname)))
+            (when (or recursive
+                      (string= (file-name-directory fname) dir))
+              (revert-buffer :ignore-auto :noconfirm))))))))

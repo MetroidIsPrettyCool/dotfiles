@@ -16,7 +16,7 @@ URxvt*cursorColor:  {cursor}
 XTerm*cursorColor:  {cursor}
 UXTerm*cursorColor: {cursor}
 URxvt*borderColor:  {background.alpha}
-polybar*background: #9F{background.strip}
+polybar*background: #BF{background.strip}
 
 ! Colors 0-15.
 *.color0: {color0}

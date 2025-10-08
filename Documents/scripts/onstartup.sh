@@ -8,7 +8,7 @@ set -x
 # restart networking profile if it's not up
 #
 # kinda hacky, might wanna rewrite this as a systemd unit or something
-home_netctl_profile='home-home'
+home_netctl_profile='trogdor'
 if ! netctl is-active "${home_netctl_profile}" 1>/dev/null 2>/dev/null; then
     $MY_SCRIPTS_DIR/wlanrestart.sh "${home_netctl_profile}"
 fi

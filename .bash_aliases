@@ -17,6 +17,14 @@ alias paclean='sudo pacman -R $(pacman -Qdtq)'
 
 alias yay-remove='yay -Rns'
 
+# everything but -help and -version
+alias javap-all='javap -l -private -s -sysinfo -constants -c -verbose'
+
+# turns default allows into warns
+alias clippy-all='cargo clippy -- -W clippy::all -W clippy::pedantic -W clippy::restriction -W clippy::nursery -W clippy::cargo'
+
+alias clippy-all-fix='cargo clippy --fix -- -W clippy::all -W clippy::pedantic -W clippy::restriction -W clippy::nursery -W clippy::cargo'
+
 # alias grub-mkconfig='grub-mkconfig -o /boot/grub/grub.cfg'
 
 # ===== DOTFILES =====
