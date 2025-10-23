@@ -1,4 +1,4 @@
-;; temp-mode.el --- General-purpose temporary minor mode to enable in local variables for custom keymaps
+;;; temp-mode.el --- General-purpose temporary minor mode to enable in local variables for custom keymaps
 
 ;; copied from: https://emacs.stackexchange.com/questions/519/key-bindings-specific-to-a-buffer
 

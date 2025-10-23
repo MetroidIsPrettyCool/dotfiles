@@ -54,8 +54,6 @@ xdotool keyup Shift_L Shift_R Caps_Lock Shift_Lock Control_L Control_R Alt_L Alt
 #
 # https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html#index-read
 while IFS= read -rN1 char; do
-    echo "${char}" >>~/test.txt
-
     # that preceding single quote down there is a extension POSIX shell printf makes to C printf, telling it to treat a
     # character as its numeric value
     #

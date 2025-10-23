@@ -1,53 +1,34 @@
-;; Notes on formatting:
-;;
-;; Comment headers...
-;;
-;; 1. Should be title-case
-;;
-;; 2. Should use the following sizes, starting from the top level and without skipping any sizes as they decrease:
-;;
-;;   - 20
-;;
-;;   - 15
-;;
-;;   - 10
-;;
-;;   - 5
+;;; .emacs --- primary Emacs configuration
+
+;;; Commentary:
+
+;; Y'know, try to follow the Elisp conventions appendix. (~C-h R elisp RET g Tips RET~).
 ;;
 ;; ~use-package~ statements should follow this order:
 ;;
-;;   - ~:load_path~
+;; - ~:load_path~
+;; - ~:ensure~
+;; - ~:requires~
+;; - ~:after~
+;; - ~:demand~
+;; - ~:defer~
+;; - ~:init~
+;; - ~:custom~
+;; - ~:bind~
+;; - ~:hook~
+;; - ~:config~
 ;;
-;;   - ~:ensure~
-;;
-;;   - ~:requires~
-;;
-;;   - ~:after~
-;;
-;;   - ~:demand~
-;;
-;;   - ~:defer~
-;;
-;;   - ~:init~
-;;
-;;   - ~:custom~
-;;
-;;   - ~:bind~
-;;
-;;   - ~:hook~
-;;
-;;   - ~:config~
-;;
-;; The values for these symbols should start on the same line as the symbol if they're a single sexp, else on the next
-;; line, the name of the package should be on the same line as use-package
-;;
-;; All sexps should have their final close-parens on the same line
+;; and the values for these symbols should start on the same line as the symbol if they're a single sexp, else on the
+;; next line, the name of the package should be on the same line as use-package.
 
-;; ==================== Order-Explicit Global Stuff ====================
+;;; Code:
 
-;; =============== Put ~debug-on-*~ Calls Here ===============
+;;; Order-Explicit Global Stuff
 
-;; =============== Enable Packages and Package Repos ===============
+;;;; Put ~debug-on-*~ Calls Here
+
+;;;; Enable Packages and Package Repos
+
 (require 'package)
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 ;; Comment/uncomment this line to enable MELPA Stable if desired.  See `package-archive-priorities`
@@ -57,25 +38,8 @@
 ;; init
 (package-initialize)
 
-;; =============== Set env Vars ===============
+;;;; Misc. Customize
 
-;; (defun mememe/clone-shell-env ()
-;;   "Set Emacs environment variables from the user's login shell."
-;;   (interactive)
-;;   (let ((env-output (shell-command-to-string "/usr/bin/bash -lc /usr/bin/env")))
-;;     (dolist (line (split-string env-output "\n" t))
-;;       (when (string-match "\\`\\([^=]+\\)=\\(.*\\)\\'" line)
-;;         (let ((var (match-string 1 line))
-;;               (val (match-string 2 line)))
-;;           (setenv var val)
-;;           ;; Also update exec-path if PATH changes
-;;           (when (string= var "PATH")
-;;             (setq exec-path (split-string val path-separator))))))))
-
-;; ;; Optionally call it on startup
-;; (mememe/clone-shell-env)
-
-;; =============== Misc. Customize ===============
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -87,27 +51,16 @@
      "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
      "015a6f06366233b8f0d0a06af4aa7d8aadea126e2d70caa2422a3f173ee990ec"
      "e5494adf200eeff1505839672150dde6053e086869189c381b1ce9b792dda3a8" default))
- '(delete-by-moving-to-trash t)
- '(explicit-shell-file-name "/bin/bash")
- '(global-text-scale-adjust-resizes-frames t)
- '(help-enable-symbol-autoload t)
- '(indent-tabs-mode nil)
- '(org-babel-tangle-lang-exts
-   '(("awk" . "awk") ("clojurescript" . "cljs") ("clojure" . "clj") ("fortran" . "F90") ("groovy" . "groovy")
-     ("haskell" . "hs") ("java" . "java") ("julia" . "jl") ("latex" . "tex") ("LilyPond" . "ly") ("lisp" . "lisp")
-     ("lua" . "lua") ("maxima" . "max") ("ocaml" . "ml") ("perl" . "pl") ("processing" . "pde") ("python" . "py")
-     ("ruby" . "rb") ("sed" . "sed") ("abc" . "abc") ("csharp" . "cs") ("io" . "io") ("mathomatic" . "math")
-     ("picolisp" . "l") ("stata" . "do") ("tcl" . "tcl") ("vala" . "vala") ("vbnet" . "vb") ("D" . "d") ("C++" . "cpp")
-     ("rustic" . "rs") ("emacs-lisp" . "el") ("elisp" . "el") ("nasm" . "s")))
  '(package-install-upgrade-built-in t)
  '(package-selected-packages
-   '(ace-flyspell ada-mode circe color-theme-sanityinc-solarized company counsel cuda-mode editorconfig eglot elpher erc
-                  ewal faceup fireplace flycheck-popup-tip flymd frameshot git-modes glsl-mode gnuplot gnuplot-mode
-                  htmlize idlwave image-dired+ inheritenv java-snippets kotlin-mode leetcode lsp-ui magit mmm-mode
-                  nasm-mode org org-contrib org-present php-mode processing-mode python rainbow-mode raku-mode rustic
-                  soap-client tramp transient use-package verilog-mode visual-fill-column wc-mode which-key
-                  window-tool-bar xresources-theme yaml-mode))
- '(require-final-newline t)
+   '(ace-flyspell ada-mode circe color-theme-sanityinc-solarized company counsel cuda-mode editorconfig eglot elisp-autofmt
+                  elpher erc ewal faceup fireplace flycheck-popup-tip flymd frameshot git-modes glsl-mode gnuplot
+                  gnuplot-mode hl-todo htmlize idlwave image-dired+ inheritenv java-snippets kotlin-mode leetcode
+                  lsp-java lsp-ui magit mmm-mode nasm-mode org-contrib org-present php-mode processing-mode python
+                  rainbow-mode raku-mode rustic slint-mode soap-client tramp transient use-package verilog-mode
+                  visual-fill-column wc-mode which-key window-tool-bar xresources-theme yaml-mode))
+ '(safe-local-variable-directories
+   '("/home/joseph/Documents/website/metroidisprettycool.github.io/"))
  '(safe-local-variable-values
    '((eval load-file (concat (car (dir-locals-find-file ".")) ".emacs/shortcuts.el")) (eval buffer-face-mode t)
      (eval setq buffer-face-mode-face '(:family "Mojang"))
@@ -128,13 +81,21 @@
  '(default ((t (:inherit nil :extend nil :stipple nil :background "#0A0F16" :foreground "#e0e0e0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 110 :width normal :foundry "ADBO" :family "Source Code Pro"))))
  '(fringe ((t (:background unspecified)))))
 
-;; =============== Appearance ===============
+;;;; Appearance
 
-;; ========== Make Emacs /Slightly/ Transparent ==========
+;;;;; Make Emacs Background /Slightly/ Transparent
+
 (set-frame-parameter (selected-frame) 'alpha-background 90)
 (add-to-list 'default-frame-alist '(alpha-background . 90))
 
-;; ========== Setup Default Font For Emoji ==========
+;;;;; Dark Mode
+
+(use-package emacs
+  :custom
+  (frame-background-mode 'dark))
+
+;;;;; Setup Default Font For Just Emoji
+
 (let ((blobmoji-emoji '(;; Letterlike Symbols (select sub-ranges)
                         ?ℹ
 
@@ -197,34 +158,49 @@
 
   (dolist (emoji blobmoji-emoji) (set-fontset-font t emoji "Blobmoji" nil)))
 
-;; ========== Dark Mode! ==========
-(setq frame-background-mode 'dark)
+;;;;; Disable Various UI Elements
 
-;; ========== Load Da Theme ==========
+(use-package emacs
+  :custom
+  (inhibit-startup-screen t)
+  (scroll-bar-mode nil)
+  (tool-bar-mode nil)
+  (menu-bar-mode nil))
 
-;; (if (daemonp)
-;;     (add-hook 'after-make-frame-functions
-;; 	      (lambda (frame)
-;; 		(with-selected-frame frame
-;; 		      (load-theme 'xresources t))))
-;;   (if (window-system)
-;;       (load-theme 'xresources t)))
+;;; /Global/ Global Settings
 
-;; ==================== /Global/ Global Settings ====================
+;;;; Misc. Global Requires
 
-;; =============== Misc. Global Requires ===============
 (require 'eglot)
+(require 'lsp-mode)
+(require 'use-package)
 
-;; =============== Load All My Various Custom Elisp Files ===============
+;;;; Load Some Custom Elisp Files
+
 (require 'temp-mode "~/Documents/elisp-progs/temp-mode.el")
 
-;; =============== Enable Some Stuff That's Disabled By Default ===============
+;;;; Configuring Editor Behaviors
+
+;;;;; Global Sub-Word Mode
+
+(use-package emacs
+  :custom (global-subword-mode t))
+
+;;;;; Enable Case Region
+
 (put 'upcase-region 'disabled nil)
 (put 'downcase-region 'disabled nil)
 
-;; =============== Configuring Editor Behaviors ===============
+;;;;; Punctuation Control
 
-;; ========== Delete Trailing Whitespace When Saving ==========
+(use-package emacs
+  :custom
+  (sentence-end-double-space nil)
+  (require-final-newline t)
+  (indent-tabs-mode nil))
+
+;;;;; Delete Trailing Whitespace When Saving
+
 (defvar mememe/delete-trailing-whitespace-exempt-modes
   '(python-mode)
   "Major modes to exempt from `mememe/delete-trailing-whitespace'")
@@ -241,62 +217,76 @@
 
 (add-hook 'before-save-hook 'mememe/delete-trailing-whitespace-unless-exempt)
 
-;; ========== Configure Minor Built-Ins ==========
-
-;; ===== fill-column =====
-(setq-default fill-column 120)
-
-(add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-
-;; ========== column-number-mode ==========
-(column-number-mode t)
-
-;; =========== cua ===========
-
-;; (cua-selection-mode t)
-
-;; ===== Disable Various UI Elements =====
+;;;;; Trash Instead of Delete
 (use-package emacs
-  :custom
-  (inhibit-startup-screen t)
-  (scroll-bar-mode nil)
-  (tool-bar-mode nil)
-  (menu-bar-mode nil))
+  :custom (delete-by-moving-to-trash t))
 
-;; (setq inhibit-startup-screen t)
-;; (set-scroll-bar-mode nil)
-;; (tool-bar-mode nil)
-;; (menu-bar-mode nil)
+;;;; Configure Minor Built-Ins
 
-;; =============== Keybinds ===============
+;;;;; fill-column
 
-;; 'H' is the "hyper" key, not present on basically every PC keyboard ever made. and unused by everything i've ever seen
-;; in Emacs, so it's pretty safe for user keybinds. you'll need to modify your keyboard layout, personally, i have left
-;; control bound to ~Hyper_L~ (and capslock bound to ~Control_L~)
+(use-package emacs
+  :hook (prog-mode . display-fill-column-indicator-mode)
+  :config (setq-default fill-column 120))
 
-;; ========== Misc ==========
+;;;;; column-number-mode
 
-;; (keymap-global-set "H-l" 'goto-line)
-(keymap-global-set "H-u" 'undo-only)
-(keymap-global-set "H-c" 'comment-region)
-(keymap-global-set "H-s" (lambda () (interactive) (insert "¯\\_(ツ)_/¯")))
+(use-package emacs
+  :custom (column-number-mode t))
+
+;;;;; icomplete-mode
+
+(use-package icomplete
+  :custom (icomplete-mode t))
+
+;;;;; help-mode
+
+(use-package emacs
+  :custom (help-enable-symbol-autoload t))
+
+;;;;; shell, etc.
+
+(use-package emacs
+  :custom (explicit-shell-file-name "/bin/bash"))
+
+;;;;; text-scale-mode
+
+(use-package emacs
+  :custom (global-text-scale-adjust-resizes-frames t))
+
+;;;; Keybinds
+
+;; 'H' here is the "hyper" key, the next in the logical progression from Meta to Super. It's defined in X for historical
+;; reasons (Lisp machines, etc.) but AFAICT nobody has ever sold a PC keyboard with one. Not commercially, anyway.
+;;
+;; Though it isn't officially reserved for user keybinds -- only ~C-c letter~ is -- /I've/ never seen an Emacs package
+;; that uses them, so it's pretty safe for user keybinds and (potentially) more ergonomic.
+;;
+;; If you aren't me, you'll need to modify your keyboard layout in order to bind something to it. Personally, as an X
+;; user, I've got an ~.Xmodmap~ that sets my Caps Lock key to ~Control_L~ and my left Control key to ~Hyper_L~. Nobody
+;; *needs* Caps Lock, that's what ~C-x C-u~ is for!
+;;
+;; (Actually, for the rare times that I *do* need to toggle Caps Lock -- like sometimes a script will mess up my
+;; modifier state and I need to turn it back off -- I've bound the Menu key to Caps Lock. Nobody needs Caps Lock, but
+;; *nobody* needs Menu.)
+
+;;;;; Misc
+
+(keymap-global-set "H-s" (lambda () (interactive) (insert "¯\\_(ツ)_/¯"))) ; ¯\_(ツ)_/¯
 (keymap-global-set "H-r" 'query-replace-regexp)
 
-;; ========== "Better" Versions of Default Keybinds ==========
+;;;;; "Better" Versions of Defaults
 
-;; ====== ibuffer Instead of list-buffers ======
+;;;;;; ibuffer Instead of list-buffers
+
 (use-package ibuffer
   :bind ("C-x C-b" . ibuffer))
 
-;; ===== counsel-unicode-char Instead of insert-char =====
-(use-package counsel
-  :bind ("C-x 8 RET" . counsel-unicode-char))
+;;;;; "Missing" Opposites for Defaults
+;;
+;; All generally just the previous keybind + Shift
 
-;; ========== "Missing" Opposites for Defaults ==========
-
-;; all generally just the previous keybind+shift
-
-;; ===== M-q =====
+;;;;;; Opposite of M-q
 
 ;;;###autoload
 (defun mememe/unfill-paragraph ()
@@ -312,7 +302,7 @@
 
 (keymap-global-set "M-Q" 'mememe/unfill-paragraph)
 
-;; ===== M-y =====
+;;;;;; Opposite of M-y
 
 ;;;###autoload
 (defun mememe/yank-pop-forwards (arg)
@@ -321,7 +311,7 @@
 
 (keymap-global-set "M-Y" 'mememe/yank-pop-forwards)
 
-;; ===== C-SPC =====
+;;;;;; Opposite of C-SPC
 
 ;;;###autoload
 (defun mememe/deactive-mark (arg)
@@ -330,111 +320,107 @@
 
 (keymap-global-set "C-S-SPC" 'mememe/deactive-mark)
 
-;; ==================== Global Mode-Specific Config ====================
+;;; Minor Mode Configuration
 
-;; =============== Minor Modes ===============
+;;;; yasnippet
 
-;; =========== yasnippet ===========
 (use-package yasnippet
   :ensure t
-  :hook (((prog-mode text-mode) . yas-minor-mode))
-  :config
-  (yas-global-mode t)
-  (yas-reload-all))
+  :custom (yas-global-mode t)
+  :hook ((prog-mode text-mode) . yas-minor-mode)
+  :config (yas-reload-all))
 
-;; =========== company ===========
-(defun mememe/check-expansion ()
-  (save-excursion
-    (if (looking-at "\\_>") t
-      (backward-char 1)
-      (if (looking-at "\\.") t
-        (backward-char 1)
-        (if (looking-at "::") t nil)))))
-
-(defun mememe/tab-indent-or-complete ()
-  (interactive)
-  (if (minibufferp)
-      (minibuffer-complete)
-    (if (or (not yas/minor-mode)
-            (null (mememe/do-yas-expand)))
-        (if (mememe/check-expansion)
-            (company-complete-common)
-          (indent-for-tab-command)))))
+;;;; company
 
 (use-package company
   :ensure t
   :custom
-  (company-idle-delay 0.2) ;; how long to wait until popup
-  ;; (company-begin-commands nil) ;; uncomment to disable popup
-  :bind (:map company-mode-map
-	      ("<tab>". mememe/tab-indent-or-complete)
-	      ("TAB". mememe/tab-indent-or-complete)))
+  (company-idle-delay 0.2)) ; how long to wait until popup
 
-;; =========== display-line-numbers-mode ===========
+;;;; display-line-numbers-mode
+
 (defvar mememe/display-line-numbers-exempt-modes
   '(vterm-mode eshell-mode shell-mode term-mode ansi-term-mode inferior-python-mode fireplace-mode image-mode dun-mode
                magit-status-mode dired-mode tetris-mode rustic-compilation-mode)
   "Major modes to exempt from `mememe/display-line-numbers-mode'")
 
 (defun mememe/display-line-numbers-unless-exempt (original-fun &rest args)
-  "Turn on line numbers, exempting any major modes defined in `mememe/display-line-numbers-exempt-modes'"
+  "Turn on line numbers, exempting any major modes defined in
+`mememe/display-line-numbers-exempt-modes'"
   (if (and
        (not (member major-mode mememe/display-line-numbers-exempt-modes))
        (not (minibufferp)))
       (apply original-fun args)))
 
 (use-package display-line-numbers
-  :config
+  :custom
   (global-display-line-numbers-mode t)
-  (advice-add 'display-line-numbers--turn-on :around 'mememe/display-line-numbers-unless-exempt))
+  :config
+  (advice-add 'display-line-numbers--turn-on :around
+              'mememe/display-line-numbers-unless-exempt))
 
-;; =========== recentf ===========
+;;;; recentf
+
 (use-package recentf
   :ensure t
   :custom
   (recentf-max-menu-items 25)
   (recentf-max-saved-items 25)
+  (recentf-mode t)
   :bind ("C-x C-r" . recentf-open-files)
   :config
-  (recentf-mode t)
   (run-at-time nil (* 5 60) 'recentf-save-list))
 
-;; =========== flyspell ===========
-(use-package flycheck
+;;;; flyspell
+
+(use-package flyspell
   :ensure t
   :defer t
-  :hook (((prog-mode conf-mode) . flyspell-prog-mode)
-         (text-mode . flyspell-mode)))
+  :hook
+  (((prog-mode conf-mode) . flyspell-prog-mode)
+   (text-mode . flyspell-mode)))
 
-;; =========== flycheck ===========
+;;;; flycheck
+
 (use-package flycheck
   :ensure t
   :defer t
   ;; :hook ((flycheck-mode . flycheck-popup-tip-mode))
   )
 
-;; ========== LSP ==========
+;;;; LSP
+
 (use-package lsp-mode
+  :ensure t
+  :custom (lsp-enable-on-type-formatting nil))
+
+;;;; hl-todo
+
+(use-package hl-todo
+  :ensure t
   :custom
-  (lsp-enable-on-type-formatting nil))
+  (global-hl-todo-mode t)
+  (hl-todo-highlight-punctuation ":"))
 
-;; =============== Minor-Minor Mode Inter-Configuration ===============
+;;;; outline-minor-mode
 
-;; ========== company & yasnippet ==========
-(defun mememe/company-yasnippet-or-completion ()
-  (interactive)
-  (or (mememe/do-yas-expand)
-      (company-complete-common)))
+(use-package outline-mode
+  :hook (emacs-lisp-mode . outline-minor-mode)
+  :custom (outline-minor-mode-cycle t))
 
-(defun mememe/do-yas-expand ()
-  (let ((yas/fallback-behavior 'return-nil))
-    (yas/expand)))
+;;; Per-Topic (Language) Major/Minor Mode Configuration
 
-;; =============== Per-Topic Major/Minor Mode Configuration ===============
+;;;; Ada
 
-;; ========== C ==========
+(use-package ada-mode
+  :ensure t
+  :custom
+  (ada-indent-backend 'eglot)
+  (ada-statement-backend 'eglot))
 
-;; ===== Header Files =====
+;;;; C
+
+;;;;; C Header Files
 
 ;;;###autoload
 (defun mememe/insert-c-header-include-guard ()
@@ -449,47 +435,65 @@ if it's empty"
         (insert (concat "#ifndef " header-file-symbol "\n#define " header-file-symbol "\n\n\n\n#endif\n"))
         (previous-line 3))))
 
-;; ===== Finally... =====
+;;;;; C Mode
+
 (use-package cc-mode
   :ensure t
   :custom (c-basic-offset 4)
-  ;; :bind (:map c-mode-map ("C-c h" . mememe/insert-c-header-include-guard))
   :hook (c-mode . mememe/insert-c-header-include-guard))
 
-;; ========== Ada ==========
-(use-package ada-mode
-  :ensure t
+;;;; Java
+
+(use-package lsp-java
   :custom
-  (ada-indent-backend 'eglot)
-  (ada-statement-backend 'eglot))
-
-;; ========== Rust ==========
-(use-package rust-mode
-  :ensure t
-  :custom (rust-rustfmt-switches '("--edition" "2024")))
-
-(use-package rustic
-  :ensure t
-  :custom (rustic-compile-backtrace "1")
-  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
+  (lsp-java-vmargs '("-XX:+UseParallelGC"
+                     "-XX:GCTimeRatio=4"
+                     "-XX:AdaptiveSizePolicyWeight=90"
+                     "-Dsun.zip.disableMemoryMapping=true"
+                     "-Xmx2G" ; stutters and locks up real easy if we don't raise this from the default
+                     "-Xms100m"))
+  (lsp-java-configuration-runtimes '[;; (:name "JavaSE-1.5.0_22"
+                                     ;;        :path "/usr/lib/jvm/jdk1.5.0_22/")
+                                     (:name "JavaSE-8"
+                                            :path "/usr/lib/jvm/java-8-openjdk/")
+                                     (:name "JavaSE-11"
+                                            :path "/usr/lib/jvm/java-11-openjdk/")
+                                     (:name "JavaSE-17"
+                                            :path "/usr/lib/jvm/java-17-openjdk/"
+                                            :default t)
+                                     (:name "JavaSE-21"
+                                            :path "/usr/lib/jvm/java-21-openjdk/")
+                                     ;; (:name "JavaSE-25"
+                                     ;;        :path "/usr/lib/jvm/java-25-openjdk/")
+                                     ]))
 
 (use-package lsp-mode
-  :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"]))
+  :ensure t
+  :hook java-mode)
 
-;; ========== Org ==========
+;;;; Org
+
 (use-package org
+  :ensure t
   :custom
   (org-agenda-files nil)
   (org-agenda-loop-over-headlines-in-active-region nil)
   (org-babel-load-languages '((emacs-lisp . t) (C . t) (gnuplot . t) (shell . t)))
+  (org-babel-tangle-lang-exts
+   '(("awk" . "awk") ("clojurescript" . "cljs") ("clojure" . "clj") ("fortran" . "F90") ("groovy" . "groovy")
+     ("haskell" . "hs") ("java" . "java") ("julia" . "jl") ("latex" . "tex") ("LilyPond" . "ly") ("lisp" . "lisp")
+     ("lua" . "lua") ("maxima" . "max") ("ocaml" . "ml") ("perl" . "pl") ("processing" . "pde") ("python" . "py")
+     ("ruby" . "rb") ("sed" . "sed") ("abc" . "abc") ("csharp" . "cs") ("io" . "io") ("mathomatic" . "math")
+     ("picolisp" . "l") ("stata" . "do") ("tcl" . "tcl") ("vala" . "vala") ("vbnet" . "vb") ("D" . "d") ("C++" . "cpp")
+     ("rustic" . "rs") ("emacs-lisp" . "el") ("elisp" . "el") ("nasm" . "s")))
   (org-enforce-todo-dependencies t)
   (org-export-with-smart-quotes t)
   (org-latex-default-packages-alist
    '(("AUTO" "inputenc" t ("pdflatex")) ("T1" "fontenc" t ("pdflatex")) ("" "graphicx" t nil) ("" "longtable" nil nil)
-    ("" "wrapfig" nil nil) ("" "rotating" nil nil) ("normalem" "ulem" t nil) ("" "amsmath" t nil) ("" "amssymb" t nil)
-    ("" "capt-of" nil nil) ("" "hyperref" nil nil) ("" "siunitx" nil nil)))
+     ("" "wrapfig" nil nil) ("" "rotating" nil nil) ("normalem" "ulem" t nil) ("" "amsmath" t nil) ("" "amssymb" t nil)
+     ("" "capt-of" nil nil) ("" "hyperref" nil nil) ("" "siunitx" nil nil)))
   (org-latex-hyperref-template
-"\\hypersetup{
+   "\\hypersetup{
  pdfauthor={%a},
  pdftitle={%t},
  pdfkeywords={%k},
@@ -506,73 +510,71 @@ if it's empty"
 (with-eval-after-load 'org
   (load-file "~/Documents/elisp-progs/ol-tel.el"))
 
-;; ========== Raku... ==========
+;;;; Raku
+
 (use-package raku-mode
+  :ensure t
   :custom (raku-indent-offset 8))
 
-;; =============== Other Major Modes ===============
+;;;; Rust
 
-;; ========== dired ==========
+(use-package rust-mode
+  :ensure t
+  :custom (rust-rustfmt-switches '("--edition" "2024")))
 
-;; ;;;###autoload
-;; (defun mememe/dired-omitted-p (file)
-;;   "Return non-nil if FILE would be omitted by `dired-omit-mode'."
-;;   (require 'dired-x)
-;;   (let* ((name (file-name-nondirectory file))
-;;          (omit-re dired-omit-files))
-;;     (or
-;;      (and omit-re (string-match-p omit-re name))
-;;      (and dired-omit-extensions
-;;           (not (member (file-name-extension name t)
-;;                        dired-omit-extensions))))))
+(use-package rustic
+  :ensure t
+  :custom (rustic-compile-backtrace "1")
+  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
 
-;; ;;;###autoload
-;; (defun mememe/dired-omit-auto ()
-;;   "Enable `dired-omit-mode' IFF there's at least one file that wouldn't be omitted"
-;;   (interactive)
-;;   (require 'dired-x)
-;;   (let ((found-visible nil))
-;;     (save-excursion
-;;       (goto-char (point-min))
-;;       (while (and (not found-visible) (not (eobp)))
-;;         (when (dired-next-line 1)
-;;           (let ((file (dired-get-filename nil t)))
-;;             (message "omit-auto says: %s %s" file (mememe/dired-omitted-p file))
-;;             (when (and file (mememe/dired-omitted-p file))
-;;               (setq found-visible t))))))
-;;     (when found-visible
-;;       (dired-omit-mode))))
+(use-package lsp-mode
+  :ensure t
+  :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"]))
+
+;;;; Slint
+
+(use-package slint-mode
+  :ensure t
+  :hook (slint-mode . lsp-mode))
+
+;;; Other Major Modes
+
+;;;; dired
+
+;; TODO: figure out how to add advice to dired-omit where it won't toggle on if a buffer doesn't contains any files
+;; (files, not directories) that would be visible.
 
 (use-package dired-x
-  :after (dired))
+  :after (dired)
+  :hook
+  (dired-mode . dired-extra-startup))
 
 (use-package dired
   :custom
   (dired-use-ls-dired t)
   (dired-maybe-use-globstar t)
   (dired-vc-rename-file t)
-  (dired-listing-switches (string-join '("-l" ;; long output format, required
+  (dired-listing-switches (string-join '("-l" ; long output format, required
                                          "--all"
                                          ;; "--human-readable"
-                                         "--si" ;; same as ~--human-readable~, but powers of 10³ and not 2¹⁰
-                                         "--classify" ;; "append indicator (one of */=>@|) to entries"
+                                         "--si" ; same as ~--human-readable~, but powers of 10³ and not 2¹⁰
+                                         "--classify" ; "append indicator (one of */=>@|) to entries"
                                          )
-                                       " "))
-  :hook
-  (dired-mode . dired-extra-startup)
-  ;; (dired-mode . mememe/dired-omit-auto)
-  )
+                                       " ")))
 
-;; ========== magit ==========
+;;;; magit
+
 (use-package magit
   :ensure t
   :bind ("H-g" . magit-status))
 
-;; ========== man ==========
+;;;; man
+
 (use-package man
   :custom (Man-notify-method 'pushy))
 
-;; ==================== Misc. Unbound Convenience Functions ====================
+;;; Misc. Unbound Convenience Functions
+
 (defun mememe/revert-buffers-in-directory (dir &optional recursive)
   "Revert all file-visiting buffers under DIR.
 If RECURSIVE is non-nil, include subdirectories."
@@ -586,3 +588,5 @@ If RECURSIVE is non-nil, include subdirectories."
             (when (or recursive
                       (string= (file-name-directory fname) dir))
               (revert-buffer :ignore-auto :noconfirm))))))))
+
+;; .emacs ends here

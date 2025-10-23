@@ -19,6 +19,9 @@ add_to_path "$HOME/CEdev/bin"
 # Java
 JAVA_HOME="/usr/lib/jvm/default"
 
+# Rust
+add_to_path "$HOME/.cargo/bin/"
+
 MY_SCRIPTS_DIR=$HOME/Documents/scripts
 
 EDITOR="/usr/bin/emacsclient --no-window-system --alternate-editor='/usr/bin/emacs --no-window-system'"
