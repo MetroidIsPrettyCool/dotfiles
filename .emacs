@@ -81,6 +81,12 @@
  '(default ((t (:inherit nil :extend nil :stipple nil :background "#0A0F16" :foreground "#e0e0e0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight regular :height 110 :width normal :foundry "ADBO" :family "Source Code Pro"))))
  '(fringe ((t (:background unspecified)))))
 
+;;;; Misc. Global Requires
+
+(require 'eglot)
+(require 'lsp-mode)
+(require 'use-package)
+
 ;;;; Appearance
 
 ;;;;; Make Emacs Background /Slightly/ Transparent
@@ -165,15 +171,10 @@
   (inhibit-startup-screen t)
   (scroll-bar-mode nil)
   (tool-bar-mode nil)
-  (menu-bar-mode nil))
+  (menu-bar-mode nil)
+  (use-dialog-box nil))
 
 ;;; /Global/ Global Settings
-
-;;;; Misc. Global Requires
-
-(require 'eglot)
-(require 'lsp-mode)
-(require 'use-package)
 
 ;;;; Load Some Custom Elisp Files
 
@@ -218,20 +219,33 @@
 (add-hook 'before-save-hook 'mememe/delete-trailing-whitespace-unless-exempt)
 
 ;;;;; Trash Instead of Delete
+
 (use-package emacs
   :custom (delete-by-moving-to-trash t))
+
+;;;;; Auto-Revert
+
+(use-package autorevert
+  :custom (global-auto-revert-mode t))
+
+;;;;; Minibuffer History
+
+(use-package savehist
+  :custom
+  (savehist-mode t)
+  (history-length 50))
 
 ;;;; Configure Minor Built-Ins
 
 ;;;;; fill-column
 
-(use-package emacs
+(use-package display-fill-column-indicator
   :hook (prog-mode . display-fill-column-indicator-mode)
-  :config (setq-default fill-column 120))
+  :custom (fill-column 120))
 
 ;;;;; column-number-mode
 
-(use-package emacs
+(use-package simple
   :custom (column-number-mode t))
 
 ;;;;; icomplete-mode
@@ -241,18 +255,22 @@
 
 ;;;;; help-mode
 
-(use-package emacs
+(use-package help-fns
   :custom (help-enable-symbol-autoload t))
 
-;;;;; shell, etc.
+;;;;; shell, etc
 
-(use-package emacs
+(use-package shell
   :custom (explicit-shell-file-name "/bin/bash"))
 
 ;;;;; text-scale-mode
 
-(use-package emacs
+(use-package face-remap
   :custom (global-text-scale-adjust-resizes-frames t))
+
+;;;;; hs-minor-mode
+(use-package hideshow
+  :hook (prog-mode . hs-minor-mode))
 
 ;;;; Keybinds
 
@@ -270,8 +288,12 @@
 ;; modifier state and I need to turn it back off -- I've bound the Menu key to Caps Lock. Nobody needs Caps Lock, but
 ;; *nobody* needs Menu.)
 
-;;;;; Misc
+;;;;; Replace Yes or No With Y or N
+(fset 'yes-or-no-p 'y-or-n-p)
 
+;;;;; General
+
+(keymap-global-set "H-f" 'speedbar)
 (keymap-global-set "H-s" (lambda () (interactive) (insert "¯\\_(ツ)_/¯"))) ; ¯\_(ツ)_/¯
 (keymap-global-set "H-r" 'query-replace-regexp)
 
@@ -589,4 +611,4 @@ If RECURSIVE is non-nil, include subdirectories."
                       (string= (file-name-directory fname) dir))
               (revert-buffer :ignore-auto :noconfirm))))))))
 
-;; .emacs ends here
+;;; .emacs ends here
