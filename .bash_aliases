@@ -35,6 +35,7 @@ alias dotfiles-git="/usr/bin/git --git-dir=${drd} --work-tree=${HOME}"
 function dotfiles-git-update {
     set -euxo pipefail
     dotfiles-git add -u
+    dotfiles-git add ~/.emacs.d/mememe/*.el
     dotfiles-git commit -m "update $(date --universal)"
     dotfiles-git push github master
     set +euxo pipefail

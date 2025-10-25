@@ -1,4 +1,11 @@
-;;; ol-tel.el --- Support for links to telephone numbers in Org mode
+;;; ol-tel.el --- support for links to telephone numbers in org-mode
+
+;;; Commentary:
+
+;;; Code:
+
+(require 'use-package)
+
 (defun org-tel-open (path _)
   "Open the telephone number with xdg-open"
   (let ((url (format "tel:" path)))
@@ -23,4 +30,5 @@
                          :export 'org-tel-export))
 
 (provide 'ol-tel)
+
 ;;; ol-tel.el ends here
