@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: header include guard
+# key: head
+# condition: (or (and buffer-file-name (equal (file-name-extension buffer-file-name) "h")) (eql (car (buffer-line-statistics)) 1))
+# --
+#ifndef ${1:`(if buffer-file-name (upcase (file-name-nondirectory (file-name-sans-extension buffer-file-name))) "")`_H$(upcase yas-text)}
+#define $1
+
+$0
+
+#endif

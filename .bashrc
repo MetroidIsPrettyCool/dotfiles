@@ -30,10 +30,10 @@ function __prompt_command {
     fi
 
     # dollar prompt, on new line, green
-    PS1+="\[\e[32m\]\n$ "
+    PS1+="\[\e[32m\]\n$"
 
-    # set fg color back to white
-    PS1+="\[\e[37m\]"
+    # reset attributes, space after prompt
+    PS1+="\[\e[0m\] "
 }
 
 # PS1="\[\e[32m\]\!\[\e[34m\] \t \[\e[37m\]\u@\h \[\e[34m\]\W\n\[\e[32m\]$\[\e[37m\] "

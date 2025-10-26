@@ -36,6 +36,7 @@ function dotfiles-git-update {
     set -euxo pipefail
     dotfiles-git add -u
     dotfiles-git add ~/.emacs.d/mememe/*.el
+    dotfiles-git add ~/.emacs.d/snippets/
     dotfiles-git commit -m "update $(date --universal)"
     dotfiles-git push github master
     set +euxo pipefail
