@@ -1,3 +1,5 @@
+;; Wombat theme with a few personal modifications.
+
 (deftheme wombat
   "Medium-contrast faces with a dark gray background.
 Adapted, with permission, from a Vim color scheme by Lars H. Nielsen.
@@ -77,8 +79,14 @@ are included.")
  '(ansi-color-bright-magenta ((((class color) (min-colors 89)) (:background "#a6a1de" :foreground "#a6a1de"))))
  '(ansi-color-bright-cyan ((((class color) (min-colors 89)) (:background "#70cecc" :foreground "#70cecc"))))
  '(ansi-color-bright-white ((((class color) (min-colors 89)) (:background "#ffffff" :foreground "#ffffff"))))
- '(tab-bar ((t (:background "#f6f3e8" :foreground "#0A0F16"))))
+ '(tab-bar ((t (:background "#8ac6f2" :foreground "#0A0F16"))))
+ '(tab-bar-tab ((t (:background "#f6f3e8" :foreground "#0A0F16"))))
+ '(tab-bar-tab-inactive ((t (:background "#5b98c2" :foreground "#0A0F16"))))
  '(fringe ((t (:background unspecified))))
  '(default ((t (:background "#0A0F16" :foreground "#f6f3e8")))))
 
 (provide-theme 'wombat)
+
+;; Local Variables:
+;; eval: (unless rainbow-mode (rainbow-mode))
+;; End:
