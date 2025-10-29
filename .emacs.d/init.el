@@ -9,10 +9,6 @@
 ;; smartphone, with one TUI frame inside Termux. I am unconcerned with any
 ;; problems this config might have in any other contexts.
 
-;; Ergo, I've gated some parts of this config behind the value of the variable
-;; `system-type'. If it's gnu/linux, I'm assuming we're on MY desktop; if it's
-;; android I'm assuming we're on MY smartphone. JSYK.
-
 ;;;; General Conventions
 
 ;; Follow advice at C-h R elisp RET g Tips RET
@@ -301,8 +297,8 @@ Each STRING-OR-FORMAT should take one of the following forms:
   ('propertize STRING PROPERTIES)    a string to `'display' `propertize'."
     (apply #'concat
            (mapcar (lambda (string-or-format)
-                     (pcase (nth 0 string-or-format)
-                       ('string     (nth 1 string-or-format))
+                     (pcase                           (nth 0 string-or-format)
+                       ('string                       (nth 1 string-or-format))
 
                        ('propertize (let ((string     (nth 1 string-or-format))
                                           (properties (nth 2 string-or-format)))
