@@ -61,6 +61,56 @@
 
 ;;;; Put ~debug-on-*~ Calls Here
 
+;; (debug-on-entry 'get-scratch-buffer-create)
+
+;;;; Meta-Configuration
+
+;; Configuration for our configuration. Just to keep some file-wide settings
+;; tidy.
+
+(defvar mememe/force-single-width-characters nil
+  "Should we force Emacs to never treat any character wider than one cell?")
+
+(defvar mememe/additional-scratch-text t
+  "Should we insert some additional text into the *scratch* buffer?
+
+Involves some advice kludgery.")
+
+(defvar mememe/configure-graphic-background (or (daemonp) (display-graphic-p))
+  "Should we configure the frame background (transparency and hints)?")
+
+(defvar mememe/configure-fonts (or (daemonp) (display-graphic-p))
+  "Should we configure fonts?")
+
+(defvar mememe/swap-backspace-and-del (not (or (daemonp) (display-graphic-p)))
+  "Should we swap <Backspace> and <DEL>?
+
+This will resolve the \"Backspace invokes help\" problem.")
+
+(defvar mememe/assume-small-screen (eq system-type 'android)
+  "Should we should assume our frame is going to be very small?")
+
+(defvar mememe/commands-to-remember
+  '((speedbar)
+    (menu-bar-mode)
+    (align-regexp)
+    (ibuffer-filter-by-used-mode ibuffer-mode-map ibuffer))
+  "Alist of commands I use rarely but don't want to forget.
+
+Each entry takes the form (COMMAND &optional MAP REQUIRE) where MAP will
+be passed to `where-is-internal' as the map and REQUIRE will be
+`require'-ed to load the keymap if non-nil.")
+
+(defvar mememe/key-prefix (if (or (daemonp) (display-graphic-p)) "H-" "<home> ")
+  "Literal string to prefix to every non-shadow key binding.")
+
+(defvar mememe/use-lsp (not (eq system-type 'android))
+  "Should we install and configure LSP-related packages?")
+
+(defvar mememe/native-assembly-language
+  (car (split-string system-configuration "-"))
+  "What assembler should we configure?")
+
 ;;;; Packages
 
 ;; I like up-to-date packages, and I like having lots of packages. I don't,
@@ -114,10 +164,11 @@
 
 ;; Also, dark mode hint.
 
-(set-frame-parameter (selected-frame) 'alpha-background 90)
-(add-to-list 'default-frame-alist '(alpha-background . 90))
+(when mememe/configure-graphic-background
+  (set-frame-parameter (selected-frame) 'alpha-background 90)
+  (add-to-list 'default-frame-alist '(alpha-background . 90))
 
-(use-package emacs :custom (frame-background-mode 'dark))
+  (use-package emacs :custom (frame-background-mode 'dark)))
 
 ;;;; Font / Text Settings
 
@@ -127,64 +178,71 @@
 
 ;;;;; Default Font
 
-;; (set-face-attribute 'default nil :family "Fira Mono" :height 110)
-
-(set-frame-parameter (selected-frame) 'font "FiraCode Nerd Font Mono-11")
-(add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-11"))
+(when mememe/configure-fonts
+  (set-frame-parameter (selected-frame) 'font "FiraCode Nerd Font Mono-11")
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-11")))
 
 ;;;;; Fallback Font
 
-(setq inhibit-compacting-font-caches t)
-(setq use-default-font-for-symbols t)
+(when mememe/configure-fonts
+  (setq inhibit-compacting-font-caches t)
+  (setq use-default-font-for-symbols t)
 
-(defun mememe/force-default-fontset (frame)
-  (with-selected-frame frame
-    (set-fontset-font t 'unicode (font-spec :name "Sarasa Mono J" :size 11)
-                      nil
-                      nil)
-    (set-fontset-font t 'unicode (font-spec :name "Noto Sans Mono" :size 11)
-                      nil
-                      'append)
-    (set-fontset-font t 'unicode (font-spec :name "Symbola" :size 11)
-                      nil
-                      'append)
-    ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont")
-    ;;                   nil
-    ;;                   'append)
-    ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont Upper")
-    ;;                   nil
-    ;;                   'append)
-    (message "Forced fontset for frame %s" (frame-parameter frame 'name))))
+  (defun mememe/force-default-fontset (frame)
+    (with-selected-frame frame
+      (set-fontset-font t 'unicode (font-spec :name "Sarasa Mono J" :size 11)
+                        nil
+                        nil)
+      (set-fontset-font t 'unicode (font-spec :name "Noto Sans Mono" :size 11)
+                        nil
+                        'append)
+      (set-fontset-font t 'unicode (font-spec :name "Symbola" :size 11)
+                        nil
+                        'append)
+      ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont")
+      ;;                   nil
+      ;;                   'append)
+      ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont Upper")
+      ;;                   nil
+      ;;                   'append)
+      (message "Forced fontset for frame %s" (frame-parameter frame 'name))))
 
-(if (daemonp)
-    (add-hook 'after-make-frame-functions 'mememe/force-default-fontset)
-  (mememe/force-default-fontset (selected-frame)))
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions 'mememe/force-default-fontset)
+    (mememe/force-default-fontset (selected-frame))))
 
-;;;;; Make Wide / Fullwidth Characters Narrow / Halfwidth
-
-(use-package emacs :custom (cjk-ambiguous-chars-are-wide nil))
+;;;;; Make All Characters <= 1 Wide
 
 ;; XXXXX HACK DONT FAIL KLUDGE XXXXX
 
-;; Force Emacs to treat all characters as either width 1 or width 0.
+(when mememe/force-single-width-characters
+  (use-package emacs :custom (cjk-ambiguous-chars-are-wide nil))
 
-(map-char-table
- (lambda (range width)
-   (when (> width 1)
-     (set-char-table-range char-width-table range 1)))
- char-width-table)
+  (map-char-table
+   (lambda (range width)
+     (when (> width 1)
+       (set-char-table-range char-width-table range 1)))
+   char-width-table))
 
 ;;;;; Make Zero-Width Characters /Actually/ Display Zero-Width
+
+;; I suppose it depends on what you're doing, but `org-mode' uses ZWSP as an
+;; escape character all the time. I do not want that to fuck over my column
+;; alignment.
+
+;; Later we'll hook `whitespace-mode' to make these more visible when we want
+;; that.
 
 (defvar mememe/zero-width-characters
   '((#x200B . ("ZWSP" . 'empty-box))    ; ZERO WIDTH SPACE
     (#x200C . ("ZWNJ" . 'empty-box))    ; ZERO WIDTH NON-JOINER
     (#x200D . ("ZWJ" . 'empty-box))     ; ZERO WIDTH JOINER
     (#xFEFF . ("ZWNBSP" . 'empty-box))) ; ZERO WIDTH NO-BREAK SPACE (BOM)
-  "Characters we want to display as zero-width.
+  "Alist of characters we want to display as zero-width.
 
-Each entry is a cons cell of (CODEPOINT . DISPLAY), where DISPLAY is an
-element as described in the help page for `glyphless-char-display'.")
+Association of (CODEPOINT-OR-RANGE . DISPLAY) pairs, where DISPLAY is
+some \"element\" as described in the help page for
+`glyphless-char-display'.")
 
 (dolist (char mememe/zero-width-characters)
   (set-char-table-range glyphless-char-display (car char) 'zero-width))
@@ -193,15 +251,258 @@ element as described in the help page for `glyphless-char-display'.")
 
 ;;;;; Disable the Annoying Ones
 
-;; I don't hate menu-bar-mode, but I /have/ bound H-m to toggle it a bit further
-;; down, as it's not always helpful.
+;; I don't hate menu-bar-mode, so I bound it to H-m in case I want to re-enable
+;; it.
 
 (use-package emacs
   :custom
-  (inhibit-startup-screen t)
   (scroll-bar-mode nil)
+  (menu-bar-mode nil)
   (tool-bar-mode nil)
   (use-dialog-box nil))
+
+;;;;; Initial Buffer
+
+;; *scratch* is my friend :)
+
+(use-package emacs :custom (initial-buffer-choice t) (inhibit-startup-screen t))
+
+;; But let's make it do a little more. Rather than redefine the scratch message,
+;; we'll advise (really, Emacs? No hook?) the scratch buffer creation function
+;; to insert some additional text right after. That lets us evaluate arbitrary
+;; lisp forms at /insertion/ rather than message definition time.
+
+(when mememe/additional-scratch-text
+  (defun mememe/display-propertize-string (string properties)
+    "`propertize'-es each character of STRING as `'display' string, where the
+displayed string has PROPERTIES, and concatenates those characters together.
+
+This allows us to embed propertized strings into otherwise font-locked
+contexts, like comments; and, because we're splitting up into
+characters, we can kill and yank like it's normal text AND the point
+even behaves normally."
+    (apply #'concat
+           (seq-map (lambda (c)
+                      (let ((c (string c)))
+                        (propertize c
+                                    'display
+                                    (apply #'propertize c properties))))
+                    string)))
+
+  (defun mememe/format-list-for-scratch (strings-or-formats)
+    "Format a list of strings / formats for
+`mememe/my-additional-startup-scratch-text'.
+
+Each STRING-OR-FORMAT should take one of the following forms:
+
+  ('string STRING)                   a literal string.
+  ('datetime TIME FORMAT PROPERTIES) a time, time format string, and a
+                                     text properties list.
+  ('propertize STRING PROPERTIES)    a string to `'display' `propertize'."
+    (apply #'concat
+           (mapcar (lambda (string-or-format)
+                     (pcase (nth 0 string-or-format)
+                       ('string     (nth 1 string-or-format))
+
+                       ('propertize (let ((string     (nth 1 string-or-format))
+                                          (properties (nth 2 string-or-format)))
+
+                                      (mememe/display-propertize-string
+                                       string
+                                       properties)))
+
+                       ('datetime   (let ((time       (nth 1 string-or-format))
+                                          (format     (nth 2 string-or-format))
+                                          (properties (nth 3 string-or-format)))
+
+                                      (mememe/display-propertize-string
+                                       (format-time-string format time)
+                                       properties)))))
+                   strings-or-formats)))
+
+  (defun mememe/my-additional-startup-scratch-text ()
+    "Insert some extra (formatted!) text into the scratch buffer.
+
+That is: 1.) the time Emacs started, the time it finished loading, and
+the current time, 2.) The current date, 3.) the contents of
+commands-to-remember + their bindings, and 4.) a nice welcome back.
+
+This function returns that same scratch buffer, for easy integration
+into advice."
+    (let ((scratch (get-buffer "*scratch*")))
+      (when scratch
+        (with-current-buffer scratch
+          (insert
+           (mememe/format-list-for-scratch
+            (let ((strings-or-formats '()))
+              (push '(string ";; The time at startup was: ")
+                    strings-or-formats)
+              (push `(datetime ,before-init-time "%H:%M:%S.%N" (face bold))
+                    strings-or-formats)
+              (push '(string "\n")
+                    strings-or-formats)
+
+              (push '(string ";; The time after init was: ")
+
+                    strings-or-formats)
+              (push `(datetime ,after-init-time  "%H:%M:%S.%N" (face bold))
+
+                    strings-or-formats)
+              (push '(string "\n")
+
+                    strings-or-formats)
+
+              (push '(string ";; The time is now:         ")
+
+                    strings-or-formats)
+              (push `(datetime nil               "%H:%M:%S.%N" (face bold))
+                    strings-or-formats)
+              (push '(string "\n\n")
+                    strings-or-formats)
+
+              (push '(string ";; Today is ")
+                    strings-or-formats)
+              (push '(datetime nil "%A"        (face
+                                                (:weight
+                                                 bold
+                                                 :foreground
+                                                 "#DFA510")))
+                    strings-or-formats)
+              (push '(string ", ")
+                    strings-or-formats)
+              (push '(datetime nil "1%Y-%m-%d" (face
+                                                (:weight
+                                                 bold
+                                                 :foreground
+                                                 "#DFA510")))
+                    strings-or-formats)
+              (push '(string ".\n\n")
+                    strings-or-formats)
+
+              (push '(string ";; You wanted to remember the following:\n")
+                    strings-or-formats)
+
+              (let ((longest-cmd
+                     (cl-loop for entry in mememe/commands-to-remember
+                              maximize (string-width
+                                        (prin1-to-string (car entry))))))
+
+                (dolist (entry mememe/commands-to-remember)
+                  (let* ((cmd      (nth 0 entry))
+                         (in-map   (nth 1 entry))
+                         (requires (nth 2 entry))
+                         (cmd-str (prin1-to-string cmd)))
+
+                    (when requires (require requires))
+
+                    (push '(string ";; ")
+                          strings-or-formats)
+                    (push `(propertize ,cmd-str (face bold))
+                          strings-or-formats)
+                    (push `(string
+                            ,(concat ":"
+                                     (make-string (- (+ 1 longest-cmd)
+                                                     (string-width cmd-str))
+                                                  ?\s)))
+                          strings-or-formats)
+
+                    (dolist (key (or
+                                  (mapcar #'key-description
+                                          (ensure-list
+                                           (where-is-internal
+                                            cmd
+                                            (eval in-map)
+                                            mememe/assume-small-screen)))
+                                 (if (commandp cmd)
+                                     (list (concat "M-x " cmd-str))
+                                   '("Non-Interactive"))))
+
+                      (push `(propertize ,key (face underline))
+                            strings-or-formats)
+
+                      (push '(string ", ")
+                            strings-or-formats))
+
+                    (setcar strings-or-formats '(string "\n")))))
+              (push '(string "\n")
+                    strings-or-formats)
+
+              (push '(string ";; ")
+                    strings-or-formats)
+              (push '(propertize "Welcome home." (face
+                                                  (:weight
+                                                   bold
+                                                   :foreground
+                                                   "#00FF95")))
+                    strings-or-formats)
+              (push '(string "\n\n")
+                    strings-or-formats)
+
+              (nreverse strings-or-formats))))
+          (set-buffer-modified-p nil)))
+      scratch))
+
+  ;; There are two functions in the default Emacs distribution that are
+  ;; responsible for inserting the contents of `initial-scratch-message' into
+  ;; the *scratch* buffer: `get-scratch-buffer-create' in simple.el, which
+  ;; handles M-x scratch buffer and co., and `command-line-1' in startup.el.
+
+  ;; They have almost identical implementations of the insertion logic: "If the
+  ;; initial scratch message exists, `get-buffer' the scratch buffer and
+  ;; `with-current-buffer' `insert' `initial-scratch-message' after we
+  ;; `substitute-command-keys' + mark it as 'not modified'".
+
+  ;; The difference is that the latter only does it because the former's logic
+  ;; isn't quite right. See, command-line-1 invokes get-scratch-buffer-create,
+  ;; but only after /already/ creating an empty scratch buffer.
+  ;; get-scratch-buffer-create sees that the scratch buffer already exists, and
+  ;; thus doesn't /do/ anything. command-line-1 then checks if the buffer exists
+  ;; or is *empty,* and if it is, inserts the initial-scratch-message like we'd
+  ;; want.
+
+  ;; Isn't that stupid?
+
+  ;; So we need to run our insertion code in two places. First, as advice to
+  ;; get-scratch-buffer-create whenever the scratch buffer doesn't exist; and
+  ;; second, right after everything initializes, since we're following up on
+  ;; command-line-1's buffer creation and insertion and not our advisee's.
+
+  (add-hook 'emacs-startup-hook 'mememe/my-additional-startup-scratch-text)
+
+  (define-advice get-scratch-buffer-create
+      (:around (orig &rest args) mememe/more-scratch-text)
+    "Advice for `get-scratch-buffer-create' to `insert' more text.
+
+Checks before running the original function if *scratch* exists, and, if
+so, what size it is and whether it has been modified.
+
+If it didn't exist, or did and was zero size AND unmodified, we call
+`mememe/my-additional-startup-scratch-text' after calling the original
+function.
+
+Tested working with this configuration in \"GNU Emacs 30.2 (build 2,
+x86_64-pc-linux-gnu, GTK+ Version 3.24.50, cairo version 1.18.4)\". If
+it stops working, check the diffs."
+
+    (let* ((maybe-scratch (get-buffer "*scratch*")))
+      (apply orig args)
+      (if maybe-scratch maybe-scratch
+        (mememe/my-additional-startup-scratch-text)))))
+
+;; I can think of 3 cleaner ways to do this:
+
+;; 1. simply hook into `buffer-list-update-hook', check if a *scratch* buffer
+;; has been created, and if so, insert our text.
+
+;; 2. Use override advice instead of around, and simply insert and format the
+;; default message ourselves whenever the scratch buffer doesn't exist OR exists
+;; but is empty and unmodified. (Perhaps even consulting a global flag to see if
+;; this is the first scratch buffer we've created before looking at its size?)
+
+;; 3. Give up on tweaking the default scratch buffer and write our own, major
+;; mode and all, and use it for `initial-buffer-choice'.
+
+;; Number 3 is clearly the cleanest, of course. Something to think about.
 
 ;;;;; Mode Line
 
@@ -222,151 +523,84 @@ element as described in the help page for `glyphless-char-display'.")
 ;; in these internal data structures like this. It works (for now) but you
 ;; shouldn't do it. I'm just lazy.
 
-(use-package emacs
-  :custom
-  (mode-line-compact 'long)
-  (mode-line-percent-position nil)      ; Who needs this?
-  (mode-line-format
-   `("%e"
-     mode-line-front-space
-     (:propertize
-      (""
-       mode-line-mule-info
-       mode-line-client
-       mode-line-modified
-       mode-line-remote
-       mode-line-window-dedicated)
-      display (min-width (6.0)))
+(if mememe/assume-small-screen (use-package emacs :custom (mode-line-compact t))
 
-     mode-line-frame-identification
-     mode-line-buffer-identification
-     " "                                ; Reduced from 3 spaces.
-     mode-line-position
-     (project-mode-line project-mode-line-format)
-     (vc-mode vc-mode)
+  ;; otherwise...
+  (use-package emacs
+    :custom
+    (mode-line-compact 'long)
+    (mode-line-percent-position nil)    ; Who ever needs this?
+    (mode-line-format
+     `("%e"
+       mode-line-front-space
+       (:propertize
+        (""
+         mode-line-mule-info
+         mode-line-client
+         mode-line-modified
+         mode-line-remote
+         mode-line-window-dedicated)
+        display (min-width (6.0)))
 
-     " "
+       mode-line-frame-identification
+       mode-line-buffer-identification
+       " "                              ; Reduced from 3 spaces.
+       mode-line-position
+       (project-mode-line project-mode-line-format)
+       (vc-mode vc-mode)
 
-     ;; Ugly HACK To Pull Out Compilation / Recursive Edit Status & Major Mode
+       " "
 
-     ;; I tried using backquote, but It didn't work so I clearly messed it up
-     ;; somehow. :/ Really should just write explicitly...
-     (:eval
-      (format-mode-line
-       (list
-        (nth 0 mode-line-modes)           ; Compilation status
-        (nth 1 mode-line-modes)           ; Recursive edit open brackets
-        ;; ...                            ; Literal ")"
-        (nth 3 mode-line-modes)           ; Major mode
-        (nth 4 mode-line-modes)           ; Process status
-        (car (last mode-line-modes 2))))) ; Recursive edit closing brackets
+       ;; Ugly HACK To Pull Out Compilation / Recursive Edit Status & Major Mode
 
-     mode-line-format-right-align
+       ;; I tried using backquote, but It didn't work so I clearly messed it up
+       ;; somehow. :/ Really should just write explicitly...
+       (:eval
+        (format-mode-line
+         (list
+          (nth 0 mode-line-modes)           ; Compilation status
+          (nth 1 mode-line-modes)           ; Recursive edit open brackets
+          ;; ...                            ; Literal ")"
+          (nth 3 mode-line-modes)           ; Major mode
+          (nth 4 mode-line-modes)           ; Process status
+          (car (last mode-line-modes 2))))) ; Recursive edit closing brackets
 
-     ;; mode-line-modes
+       mode-line-format-right-align
 
-     ;; Ugly HACK To Pull Out Minor Modes
-     (:eval
-      (format-mode-line
-       (append
-        (butlast (nthcdr 5 mode-line-modes) 3) ; List of minor modes
-        ;; ...                                 ; Literal ")"
-        ;; ...                                 ; Recursive edit closing brackets
-        (last mode-line-modes))))              ; Literal spacer " "
+       ;; mode-line-modes
 
-     mode-line-misc-info
-     " "                                ; Extra spacer I've added.
-     mode-line-end-spaces)))
+       ;; Ugly HACK To Pull Out Minor Modes
+       (:eval
+        (format-mode-line
+         (append
+          (butlast (nthcdr 5 mode-line-modes) 3) ; List of minor modes
+          ;; ...                                 ; Literal ")"
+          ;; ...                                 ; Recursive edit closing [s
+          (last mode-line-modes))))              ; Literal spacer " "
+
+       mode-line-misc-info
+       " "                              ; Extra spacer I've added.
+       mode-line-end-spaces))))
 
 ;;; Configuring Editor Behaviors
 
-;;;; Scratch Message
-
-;; Rather than redefine the scratch message, we'll hook into the
-;; `emacs-startup-hook'. More power that way. We'll also hook (sorry, advise,
-;; there's really no hook for this?) the *scratch* buffer creation function.
-
-(defun mememe/my-additional-startup-scratch-text ()
-  "Insert some extra (formatted!) text into the scratch buffer.
-
-Returns that same scratch buffer, for easy integration into advice."
-  (let ((scratch (get-buffer "*scratch*")))
-    (prin1 scratch t)
-    (when scratch
-      (with-current-buffer scratch
-        (insert
-         (concat
-          ";; The time at startup was: "
-          (propertize "x"
-                      'display
-                      (propertize (format-time-string "%H:%M:%S.%N"
-                                                      before-init-time)
-                                  'font-lock-face
-                                  'bold))
-          "\n"
-          ";; The time after init was: "
-          (propertize "x"
-                      'display
-                      (propertize (format-time-string "%H:%M:%S.%N"
-                                                      after-init-time)
-                                  'font-lock-face
-                                  'bold))
-          "\n"
-          ";; The time is now:         "
-          (propertize "x"
-                      'display
-                      (propertize (format-time-string "%H:%M:%S.%N")
-                                  'font-lock-face
-                                  'bold))
-          "\n\n"
-          ";; Today is "
-          (propertize "x"
-                      'display
-                      (propertize (format-time-string "%A")
-                                  'font-lock-face
-                                  '(:weight bold :foreground "#DFA510")))
-          ", "
-          (propertize "x"
-                      'display
-                      (propertize (format-time-string "1%Y-%m-%d")
-                                  'font-lock-face
-                                  '(:weight bold :foreground "#DFA510")))
-          ".\n\n"
-          ";; "
-          (propertize "x"
-                      'display
-                      (propertize "Welcome home."
-                                  'font-lock-face
-                                  '(:weight bold :foreground "#00FF95")))
-          "\n\n"))
-        (set-buffer-modified-p nil)))
-    scratch))
-
-(add-hook 'emacs-startup-hook 'mememe/my-additional-startup-scratch-text)
-
-(define-advice get-scratch-buffer-create
-    (:around (orig &rest args) mememe/more-scratch-text)
-
-  (let ((maybe-scratch (get-buffer "*scratch*")))
-    (apply orig args)
-    (if maybe-scratch maybe-scratch
-      (mememe/my-additional-startup-scratch-text))))
-
 ;;;; Window-Splitting
 
-;; I'd rather a vertical split than a horizontal one.
+;; Only matters on my 16:10 desktop monitor. I'd rather see a vertical split
+;; than a horizontal one.
 
-(use-package emacs
-  :custom (split-width-threshold 160) (split-height-threshold 90))
+(unless mememe/assume-small-screen
+  (use-package emacs
+    :custom (split-width-threshold 160) (split-height-threshold 90)))
 
 ;;;; Enable *case-region
 
 ;; Who needs Caps Lock?
 
-(defvar mememe/enable-disabled '(upcase-region downcase-region)
+(defvar mememe/disabled-to-enable '(upcase-region downcase-region)
   "Disabled commands to enable on startup.")
 
-(dolist (command mememe/enable-disabled)
+(dolist (command mememe/disabled-to-enable)
   (put command 'disabled nil))
 
 ;;;; Punctuation Style
@@ -379,11 +613,11 @@ Returns that same scratch buffer, for easy integration into advice."
   (sentence-end-double-space nil)
   (require-final-newline t)
   (indent-tabs-mode nil)
-  (fill-column 120))
+  (fill-column (if mememe/assume-small-screen 50 120)))
 
 ;;;; Delete Trailing Whitespace When Saving
 
-(defvar mememe/delete-trailing-whitespace-exempt-modes nil
+(defvar mememe/delete-trailing-whitespace-exempt-modes '()
   "Major modes to exempt from `mememe/delete-trailing-whitespace'.
 
 Modes which are derived (parented by) from listed modes will also be
@@ -432,13 +666,9 @@ parents) is listed in `mememe/delete-trailing-whitespace-exempt-modes'."
 
 ;; I want some convenient opposites of my commonly-used commands.
 
-;; I want to answer y or n to prompts and not yes or no.
-
-;; and I also want a few convenience helpers.
+;; and I also want a few extra convenience helpers.
 
 ;;;; Functions
-
-(fset 'yes-or-no-p 'y-or-n-p)
 
 (defun mememe/unfill-paragraph ()
   "Un-fill a paragraph at point.
@@ -467,17 +697,29 @@ Essentially the opposite of `fill-paragraph'"
 
 ;;;; Keys
 
-(keymap-set (current-global-map) "H-s" "¯ \\ _ ( ツ ) _ / ¯") ; ¯\_(ツ)_/¯
-(keymap-set
- (current-global-map) "C-x 8 z" (string (char-from-name "ZERO WIDTH SPACE")))
+(when mememe/swap-backspace-and-del
+  (keyboard-translate ?\C-h ?\C-?))
 
-(use-package emacs
-  :bind
-  (("H-r" . query-replace-regexp)
-   ("H-<home>" . mememe/dump-buffer-local-variables)
-   ("M-Q" . mememe/unfill-paragraph)
-   ("M-Y" . mememe/yank-pop-forwards)
-   ("C-S-SPC" . mememe/deactive-mark)))
+(when (key-valid-p (string-trim mememe/key-prefix))
+  (unbind-key (string-trim mememe/key-prefix) global-map))
+
+(dolist (binding
+         (list (cons "C-x 8 z"
+                     (string (char-from-name "ZERO WIDTH SPACE")))
+               (cons "M-Q"
+                     #'mememe/unfill-paragraph)
+               (cons "M-Y"
+                     #'mememe/yank-pop-forwards)
+               (cons "C-S-SPC"
+                     #'mememe/deactive-mark)
+               (cons (format "%ss" mememe/key-prefix)
+                     "¯ \\ _ ( ツ ) _ / ¯")
+               (cons (format "%sr" mememe/key-prefix)
+                     #'query-replace-regexp)
+               (cons (format "%s<home>" mememe/key-prefix)
+                     #'mememe/dump-buffer-local-variables)))
+
+  (keymap-set global-map (car binding) (cdr binding)))
 
 ;;; Global Mode Configuration
 
@@ -494,8 +736,8 @@ Essentially the opposite of `fill-paragraph'"
 
 ;;;; `column-number-mode' (built-in)
 
-;; Display column number In mode line, next to the line number. Like this:
-;; (322,79)
+;; Display column number in the mode line, next to the line number. Looks like
+;; this: (322,79)
 
 (use-package simple :custom (column-number-mode t))
 
@@ -658,19 +900,19 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 ;; I mostly dislike electric punctuation (and if I wanted them I'd rather just
 ;; enable electric-*-mode), so I've disabled the similar LSP feature.
 
-(use-package lsp-mode
-  :ensure t
-  :defer t
-  :custom (lsp-enable-on-type-formatting nil))
+(when mememe/use-lsp (use-package lsp-mode
+                       :ensure t
+                       :defer t
+                       :custom (lsp-enable-on-type-formatting nil)))
 
-(use-package lsp-ui :ensure t :defer t)
+(when mememe/use-lsp (use-package lsp-ui :ensure t :defer t))
 
 ;;;; `menu-bar-mode' (built-in)
 
 ;; I don't hate the menu bar. /But/ I want an easy-to-remember way to turn it
 ;; off.
 
-(use-package menu-bar :bind ("H-u" . menu-bar-mode))
+(keymap-set global-map (format "%su" mememe/key-prefix) #'menu-bar-mode)
 
 ;;;; `outline-minor-mode' (built-in)
 
@@ -701,17 +943,21 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;;;; `tab-bar-mode' (built-in)
 
-;; Tabs! We'll turn the tab bar on by default, just to remind us to use it.
+;; Tabs!
 
-(use-package tab-bar
-  :custom (tab-bar-mode t) (tab-bar-new-tab-to 'rightmost)
-  :bind
-  (("H-t" . tab-bar-mode)
-   ("C-x t n" . tab-bar-switch-to-next-tab)   ; I have no use for
-                                              ; `tab-duplicate'
-   ("C-x t p" . tab-bar-switch-to-prev-tab))) ; and I don't need
-                                              ; `project-other-tab-command' so
-                                              ; badly as to key bind it
+(dolist (binding
+         (list (cons (format "%st" mememe/key-prefix)
+                     #'tab-bar-mode)
+
+               (cons "C-x t n"          ; Was `tab-duplicate'.
+                     #'tab-bar-switch-to-next-tab)
+
+               (cons "C-x t p"          ; Was `project-other-tab-command'.
+                     #'tab-bar-switch-to-prev-tab)))
+
+  (keymap-set global-map (car binding) (cdr binding)))
+
+(use-package tab-bar :custom (tab-bar-new-tab-to 'rightmost))
 
 ;;;; `text-scale-mode' (built-in)
 
@@ -764,11 +1010,25 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 ;; The Ada programming language. I usually prefer `lsp-mode' over `eglot', but
 ;; I'm not touching this until I remember what these settings mean.
 
-(use-package ada-mode
-  :ensure t
-  :custom
-  (ada-indent-backend 'eglot)
-  (ada-statement-backend 'eglot))
+(when mememe/use-lsp (use-package ada-mode
+                       :ensure t
+                       :custom
+                       (ada-indent-backend 'eglot)
+                       (ada-statement-backend 'eglot)))
+
+;;;; Assembly
+
+;; Always use `'nasm-mode' over `asm-mode' on x86 or x64. I don't give a darn
+;; about gas.
+
+(when (or (string-equal mememe/native-assembly-language 'x86_64)
+          (string-equal mememe/native-assembly-language 'x86))
+
+  (dolist (mode-association auto-mode-alist)
+    (when (eq (cdr mode-association) 'asm-mode)
+      (setcdr mode-association 'nasm-mode)))
+
+  (use-package nasm-mode :ensure t :defer t))
 
 ;;;; C
 
@@ -802,7 +1062,7 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
       "--classify") ; "append indicator (one of */=>@|) to entries"
     " ")))
 
-(use-package speedbar :defer t :bind ("H-f" . speedbar))
+(keymap-set global-map (format "%sf" mememe/key-prefix) #'speedbar)
 
 ;;;; Emacs Lisp
 
@@ -811,9 +1071,9 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 (use-package elisp-mode :hook (emacs-lisp-mode . outline-minor-mode))
 
 (use-package elisp-autofmt
-  :defer t
   :ensure t
-  :bind* ("H-m e r" . elisp-autofmt-region))
+  :defer t
+  :hook emacs-lisp-mode)
 
 ;;;; git
 
@@ -822,7 +1082,9 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package git-modes :ensure t :defer t)
 
-(use-package magit :ensure t :defer t :bind ("H-g" . magit-status))
+(use-package magit :ensure t :defer t)
+
+(keymap-set global-map (format "%sg" mememe/key-prefix) #'magit-status)
 
 ;;;; GLSL
 
@@ -851,22 +1113,30 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;; Java is not a language I want to write without an LSP.
 
-(use-package lsp-java
-  :ensure t
-  :after lsp-mode
-  :custom
-  (lsp-java-vmargs
-   '("-XX:+UseParallelGC"
-     "-XX:GCTimeRatio=4"
-     "-XX:AdaptiveSizePolicyWeight=90"
-     "-Dsun.zip.disableMemoryMapping=true"
-     "-Xmx2G" ; locks up really easily if we don't raise this from the default
-     "-Xms100m"))
-  (lsp-java-configuration-runtimes
-   '[(:name "JavaSE-17" :path "/usr/lib/jvm/java-17-openjdk/" :default t)
-     (:name "JavaSE-21" :path "/usr/lib/jvm/java-21-openjdk/")]))
+(when mememe/use-lsp (use-package lsp-java
+                       :ensure t
+                       :after lsp-mode
+                       :custom
+                       (lsp-java-vmargs
+                        '("-XX:+UseParallelGC"
+                          "-XX:GCTimeRatio=4"
+                          "-XX:AdaptiveSizePolicyWeight=90"
+                          "-Dsun.zip.disableMemoryMapping=true"
+                          "-Xmx2G" ; locks up really easily without this.
+                          "-Xms100m"))
+                       (lsp-java-configuration-runtimes
+                        '[(:name
+                           "JavaSE-17"
+                           :path
+                           "/usr/lib/jvm/java-17-openjdk/"
+                           :default
+                           t)
+                          (:name
+                           "JavaSE-21"
+                           :path
+                           "/usr/lib/jvm/java-21-openjdk/")])))
 
-(use-package lsp-mode :ensure t :defer t :hook java-mode)
+(when mememe/use-lsp (use-package lsp-mode :ensure t :defer t :hook java-mode))
 
 ;;;; Kotlin
 
@@ -874,16 +1144,6 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 ;; syntax highlighting.
 
 (use-package kotlin-mode :ensure t :defer t)
-
-;;;; NASM / YASM
-
-;; Always use over `asm-mode'. I don't give a darn about gas.
-
-(dolist (mode-association auto-mode-alist)
-  (when (eq (cdr mode-association) 'asm-mode)
-    (setcdr mode-association 'nasm-mode)))
-
-(use-package nasm-mode :ensure t :defer t)
 
 ;;;; Man / Help / Info / Other Documentation
 
@@ -923,8 +1183,8 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;;;; Org
 
-;; Good 'ol org-mode. Here's what I think are some reasonable defaults, plus
-;; some other stuff, plus a little package I wrote to enable telephone links.
+;; Good 'ol `org-mode'. Here's what I think are some reasonable defaults, plus
+;; some other stuff, and a little package I wrote to enable telephone links.
 
 (use-package org
   :ensure t
@@ -1032,16 +1292,20 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
   :defer t
   :custom (rust-rustfmt-switches '("--edition" "2024")))
 
-(use-package rustic
-  :ensure t
-  :after (lsp-mode rust-mode)
-  :custom (rustic-compile-backtrace "1")
-  :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
+(when mememe/use-lsp (use-package rustic
+                       :ensure t
+                       :after (lsp-mode rust-mode)
+                       :custom (rustic-compile-backtrace "1")
+                       :config
+                       (add-to-list 'compilation-environment
+                                    "RUST_BACKTRACE=1")))
 
-(use-package lsp-mode
-  :ensure t
-  :defer t
-  :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"]))
+(when mememe/use-lsp (use-package lsp-mode
+                       :ensure t
+                       :defer t
+                       :custom
+                       (lsp-rust-analyzer-diagnostics-disabled
+                        ["inactive-code"])))
 
 ;;;; Shell
 
@@ -1061,7 +1325,7 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package slint-mode :defer t :ensure t)
 
-(use-package lsp-mode :ensure t :defer t :hook slint-mode)
+(when mememe/use-lsp (use-package lsp-mode :ensure t :defer t :hook slint-mode))
 
 (use-package rainbow-mode
   :ensure t
