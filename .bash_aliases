@@ -1,16 +1,22 @@
 #!/bin/bash
 
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
 # ==== INHIBIT DANGEROUS COMMANDS VIA ALIAS ====
+
 alias rm='"${MY_SCRIPTS_DIR}"/rm-warning.sh'
 
 # ==== DEFAULT ARGUMENTS ====
-alias ls='ls --color=auto'
 
-alias ping='ping 8.8.8.8'
+alias ls='/usr/bin/ls --color=auto'
 
-alias alsamixer='alsamixer -c 0'
+alias ping='/usr/bin/ping 8.8.8.8'
+
+alias alsamixer='/usr/bin/alsamixer -c 0'
 
 # ==== ALTERNATE NAMES FOR COMMON ARGUMENTS ====
+
 alias la='/usr/bin/ls -A'
 alias lal='/usr/bin/ls -Al'
 
@@ -37,12 +43,23 @@ alias clippy-all-fix='/usr/bin/cargo clippy --fix -- -W clippy::all \
 # alias grub-mkconfig='grub-mkconfig -o /boot/grub/grub.cfg'
 
 # ==== DOTFILE MANAGEMENT ====
+
 dotfiles-git() (
     set -euxo pipefail
 
     local drd=~/.dotfiles-repo/ # dotfiles repository directory
 
     /usr/bin/git --git-dir="${drd}" --work-tree="${HOME}" "$@"
+)
+
+dotfiles-git-cloc() (
+    set -euo pipefail
+
+    cd ~
+
+    readarray -t files < <(dotfiles-git ls-files)
+
+    cloc "${files[@]}"
 )
 
 dotfiles-git-update() (
@@ -53,10 +70,10 @@ dotfiles-git-update() (
     dotfiles-git add "${MY_SCRIPTS_DIR}"
     dotfiles-git commit -m "update $(date --universal)"
     dotfiles-git push github master
-    set +euxo pipefail
 )
 
 # ==== SHORT NAMES FOR NON-PATH EXECUTABLES ====
+
 alias java8=/usr/lib/jvm/jre1.8.0_451/bin/java
 alias javac8=/usr/lib/jvm/java-8-openjdk/bin/javac
 
@@ -66,7 +83,8 @@ alias script-update-system='"${MY_SCRIPTS_DIR}"/update-system.sh'
 alias script-manage-orphan-tilde-files='"${MY_SCRIPTS_DIR}"/manage-orphan-tilde-files.sh'
 
 # ==== MISC. SMALL FUNCTIONS ====
-cl() (
+
+cl() {
     cd "$@"
     ls --color=auto -Al
-)
+}
