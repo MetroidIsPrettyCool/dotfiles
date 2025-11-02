@@ -40,11 +40,11 @@ if [ -d /etc/X11/xinit/xinitrc.d ] ; then
     unset f
 fi
 
-eval $(gnome-keyring-daemon --start)
+eval "$(gnome-keyring-daemon --start)"
 export SSH_AUTH_SOCK
 export QT_QPA_PLATFORMTHEME=gtk2
 
-if [ -f $HOME/.profile ]; then
+if [ -f "${HOME}"/.profile ]; then
     . ~/.profile
 fi
 

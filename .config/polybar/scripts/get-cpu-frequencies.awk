@@ -1,8 +1,16 @@
 #!/bin/awk -f
 
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Print the min, mean, max and standard distribution of CPU frequencies when given /proc/cpuinfo as input.
+
+# ==== CODE ====
+
 BEGIN {
     FS = "\t*:"
-
     count = 0
 }
 

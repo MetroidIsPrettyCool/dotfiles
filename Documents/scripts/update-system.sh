@@ -1,5 +1,19 @@
 #!/bin/bash
+
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Run various update commands.
+
+# REQUIRES: bash, cargo-install-update, emacs, rustup, yay
+
+# ==== SHELL OPTIONS ====
+
 set -euxo pipefail
+
+# ==== CODE ====
 
 yay -Syu
 

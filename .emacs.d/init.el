@@ -53,59 +53,192 @@
 
 ;;; Code:
 
+;;; Meta-Configuration
+
+;; Rather than spread everything out into a billion little if-feature-detected
+;; guards with no coordination, I've chosen to define a number of named feature
+;; flags right up top here, so that later parts of the configuration may
+;; reference them as they please.
+
+;;;; Keys and Input
+
+(defconst mememe/commands-to-remember
+  '((align-regexp)
+    (back-to-indentation)
+    (down-list)
+    (exchange-point-and-mark)
+    (ibuffer-filter-by-used-mode ibuffer-mode-map ibuffer)
+    (isearch-forward-word)
+    (isearch-repeat-forward isearch-mode-map)
+    (isearch-toggle-case-fold isearch-mode-map)
+    (up-list)
+    (xref-find-definitions)
+    (speedbar))
+  "Alist of commands I use rarely but don't want to forget.
+
+Each entry takes the form (COMMAND &optional MAP REQUIRE), where MAP
+will be passed to `where-is-internal' as the key map(s) to look in, and
+REQUIRE will be `require'-ed to load the keymap if non-nil.")
+
+(defconst mememe/key-prefix
+  (if (or (daemonp) (display-graphic-p)) "H-" "<home> ")
+  "Literal string to prefix to every non-shadow key binding.")
+
+(defconst mememe/swap-backspace-and-del
+  (not (or (daemonp) (display-graphic-p)))
+  "Should we swap <Backspace> and <DEL>?
+
+This will resolve the \"Backspace invokes help\" problem.")
+
+;;;; Appearance
+
+(defconst mememe/assume-small-screen (eq system-type 'android)
+  "Should we should assume our frame is going to be very small?")
+
+(defconst mememe/configure-fonts (or (daemonp) (display-graphic-p))
+  "Should we configure fonts?")
+
+(defconst mememe/configure-graphical-background
+  (or (daemonp) (display-graphic-p))
+  "Should we configure the frame background (transparency and hints)?")
+
+;;;; Packages
+
+(defconst mememe/external-dependencies
+  (pcase system-type
+    ('gnu/linux '(ls
+                  bash
+                  git
+                  libvterm
+                  rust-analyzer
+                  slint-lsp
+                  (jdks . [(:name
+                            "JavaSE-17"
+                            :path
+                            "/usr/lib/jvm/java-17-openjdk/"
+                            :default
+                            t)
+                           (:name
+                            "JavaSE-21"
+                            :path
+                            "/usr/lib/jvm/java-21-openjdk/")])
+                  eclipse-jdt-ls))
+    ('android   '(ls bash git)))
+  "Pseudo-alist of external (outside Emacs) dependencies we'll rely on.
+
+See `assoc-default' for what I mean by \"pseudo-alist.\" Values will be
+picked out of this list with a call like:
+
+(assoc-default 'foo mememe/external-dependencies #'eq t)
+
+Expected formats of associated values are key-specific, I'll document them here.
+
+ 'jdks   should be usable as the value of `lsp-java-configuration-runtimes'
+
+Some of these dependencies are fetched or created automatically by
+relevant tools, like libvterm, others are system-wide. Either way: if
+they aren't listed here, we shouldn't do anything that needs them. (If
+we can help it.)")
+
+(defconst mememe/use-lsp (not (eq system-type 'android))
+  "Should we install and configure LSP-related packages?")
+
+(defconst mememe/default-assembly-language
+  (pcase (car (split-string system-configuration "-" nil nil))
+    ("m68k"                             ; my beloved
+     '68000)
+
+    ((or "aarch64"
+         "aarch64_be"
+         "arm"
+         "arm64_32"
+         "armeb"
+         "armebv7r"
+         "armv4t"
+         "armv5te"
+         "armv6"
+         "armv6k"
+         "armv7"
+         "armv7a"
+         "armv7k"
+         "armv7r"
+         "armv7s"
+         "thumbv4t"
+         "thumbv5te"
+         "thumbv6m"
+         "thumbv7a"
+         "thumbv7em"
+         "thumbv7m"
+         "thumbv7neon"
+         "thumbv8m.base"
+         "thumbv8m.main")
+     'arm)
+
+    ((or "mips"
+         "mips64"
+         "mips64el"
+         "mipsel"
+         "mipsisa32r6"
+         "mipsisa32r6el"
+         "mipsisa64r6"
+         "mipsisa64r6el")
+     'mips)
+
+    ((or "riscv32gc"
+         "riscv32i"
+         "riscv32im"
+         "riscv32imac"
+         "riscv32imc"
+         "riscv64gc"
+         "riscv64imac")
+     'riscv)
+
+    ((or "powerpc"                      ; one day...
+         "powerpc64"
+         "powerpc64le")
+     'power)
+
+    ((or "s390x")
+     'system/390)
+
+    ((or "sparc"
+         "sparc64"
+         "sparcv9")
+     'sparc)
+
+    ((or "wasm32"
+         "wasm64")
+     'wasm)
+
+    ((or "i386"                         ; my beloathed
+         "i586"
+         "i686"
+         "x86_64")
+     'x86))
+  "What kind of assembler should we configure?")
+
+;;;; Behavior
+
+(defconst mememe/additional-scratch-text t
+  "Should we insert some additional text into the *scratch* buffer?
+
+Involves some advice kludgery.")
+
+(defconst mememe/force-single-width-characters nil
+  "Should we force Emacs to never treat any character wider than one cell?")
+
 ;;; Order-Explicit Global Stuff
 
 ;;;; Put ~debug-on-*~ Calls Here
 
 ;; (debug-on-entry 'get-scratch-buffer-create)
 
-;;;; Meta-Configuration
+;;;; Load Path
 
-;; Configuration for our configuration. Just to keep some file-wide settings
-;; tidy.
+;; I like to put my manually-installed or self-written Elisp under the "lisp"
+;; directory of my user's Emacs data dir.
 
-(defvar mememe/force-single-width-characters nil
-  "Should we force Emacs to never treat any character wider than one cell?")
-
-(defvar mememe/additional-scratch-text t
-  "Should we insert some additional text into the *scratch* buffer?
-
-Involves some advice kludgery.")
-
-(defvar mememe/configure-graphic-background (or (daemonp) (display-graphic-p))
-  "Should we configure the frame background (transparency and hints)?")
-
-(defvar mememe/configure-fonts (or (daemonp) (display-graphic-p))
-  "Should we configure fonts?")
-
-(defvar mememe/swap-backspace-and-del (not (or (daemonp) (display-graphic-p)))
-  "Should we swap <Backspace> and <DEL>?
-
-This will resolve the \"Backspace invokes help\" problem.")
-
-(defvar mememe/assume-small-screen (eq system-type 'android)
-  "Should we should assume our frame is going to be very small?")
-
-(defvar mememe/commands-to-remember
-  '((speedbar)
-    (menu-bar-mode)
-    (align-regexp)
-    (ibuffer-filter-by-used-mode ibuffer-mode-map ibuffer))
-  "Alist of commands I use rarely but don't want to forget.
-
-Each entry takes the form (COMMAND &optional MAP REQUIRE) where MAP will
-be passed to `where-is-internal' as the map and REQUIRE will be
-`require'-ed to load the keymap if non-nil.")
-
-(defvar mememe/key-prefix (if (or (daemonp) (display-graphic-p)) "H-" "<home> ")
-  "Literal string to prefix to every non-shadow key binding.")
-
-(defvar mememe/use-lsp (not (eq system-type 'android))
-  "Should we install and configure LSP-related packages?")
-
-(defvar mememe/native-assembly-language
-  (car (split-string system-configuration "-"))
-  "What assembler should we configure?")
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;;;; Packages
 
@@ -120,9 +253,11 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 
 (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
 
-(setq package-install-upgrade-built-in t)
+(setopt package-install-upgrade-built-in t)
 
-(setq package-archive-priorities '(("gnu" . 30) ("nongnu" . 20) ("melpa" . 10)))
+(setopt package-archive-priorities '(("gnu"    . 30)
+                                     ("nongnu" . 20)
+                                     ("melpa"  . 10)))
 
 (package-initialize)
 
@@ -137,7 +272,7 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 
 ;; So we'll stick that gobbledygook somewhere else.
 
-(setq custom-file "~/.emacs.d/custom.el")
+(setopt custom-file "~/.emacs.d/custom.el")
 (load custom-file)
 
 ;;; Appearance
@@ -160,11 +295,11 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 
 ;; Also, dark mode hint.
 
-(when mememe/configure-graphic-background
+(when mememe/configure-graphical-background
   (set-frame-parameter (selected-frame) 'alpha-background 90)
   (add-to-list 'default-frame-alist '(alpha-background . 90))
 
-  (use-package emacs :custom (frame-background-mode 'dark)))
+  (use-package frame :custom (frame-background-mode 'dark)))
 
 ;;;; Font / Text Settings
 
@@ -174,31 +309,29 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 
 ;;;;; Default Font
 
-(when mememe/configure-fonts
-  (set-frame-parameter (selected-frame) 'font "FiraCode Nerd Font Mono-11")
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font Mono-11")))
+(set-face-attribute 'default nil :family "SauceCode Pro NFM" :height 110)
 
 ;;;;; Fallback Font
 
 (when mememe/configure-fonts
-  (setq inhibit-compacting-font-caches t)
-  (setq use-default-font-for-symbols t)
+  (setopt inhibit-compacting-font-caches t)
+  (setopt use-default-font-for-symbols t)
 
   (defun mememe/force-default-fontset (frame)
     (with-selected-frame frame
-      (set-fontset-font t 'unicode (font-spec :name "Sarasa Mono J" :size 11)
+      (set-fontset-font t 'unicode (font-spec :name "Sarasa Mono J")
                         nil
                         nil)
-      (set-fontset-font t 'unicode (font-spec :name "Noto Sans Mono" :size 11)
+      (set-fontset-font t 'unicode (font-spec :name "Noto Sans Mono")
                         nil
                         'append)
-      (set-fontset-font t 'unicode (font-spec :name "Symbola" :size 11)
+      (set-fontset-font t 'unicode (font-spec :name "Symbola")
                         nil
                         'append)
-      ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont")
+      ;; (set-fontset-font t 'unicode (font-spec :name "Unifont")
       ;;                   nil
       ;;                   'append)
-      ;; (set-fontset-font t 'unicode (font-spec :size 11 :name "Unifont Upper")
+      ;; (set-fontset-font t 'unicode (font-spec :name "Unifont Upper")
       ;;                   nil
       ;;                   'append)
       (message "Forced fontset for frame %s" (frame-parameter frame 'name))))
@@ -212,7 +345,7 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 ;; XXXXX HACK DONT FAIL KLUDGE XXXXX
 
 (when mememe/force-single-width-characters
-  (use-package emacs :custom (cjk-ambiguous-chars-are-wide nil))
+  (setopt cjk-ambiguous-chars-are-wide nil)
 
   (map-char-table
    (lambda (range width)
@@ -229,7 +362,7 @@ be passed to `where-is-internal' as the map and REQUIRE will be
 ;; Later we'll hook `whitespace-mode' to make these more visible when we want
 ;; that.
 
-(defvar mememe/zero-width-characters
+(defconst mememe/zero-width-characters
   '((#x200B . ("ZWSP" . 'empty-box))    ; ZERO WIDTH SPACE
     (#x200C . ("ZWNJ" . 'empty-box))    ; ZERO WIDTH NON-JOINER
     (#x200D . ("ZWJ" . 'empty-box))     ; ZERO WIDTH JOINER
@@ -243,25 +376,12 @@ some \"element\" as described in the help page for
 (dolist (char mememe/zero-width-characters)
   (set-char-table-range glyphless-char-display (car char) 'zero-width))
 
-;;;; UI Elements
-
-;;;;; Disable the Annoying Ones
-
-;; I don't hate menu-bar-mode, so I bound it to H-m in case I want to re-enable
-;; it.
-
-(use-package emacs
-  :custom
-  (scroll-bar-mode nil)
-  (menu-bar-mode nil)
-  (tool-bar-mode nil)
-  (use-dialog-box nil))
-
-;;;;; Initial Buffer
+;;;; Initial Buffer
 
 ;; *scratch* is my friend :)
 
-(use-package emacs :custom (initial-buffer-choice t) (inhibit-startup-screen t))
+(setopt initial-buffer-choice t)
+(setopt inhibit-startup-screen t)
 
 ;; But let's make it do a little more. Rather than redefine the scratch message,
 ;; we'll advise (really, Emacs? No hook?) the scratch buffer creation function
@@ -500,7 +620,7 @@ it stops working, check the diffs."
 
 ;; Number 3 is clearly the cleanest, of course. Something to think about.
 
-;;;;; Mode Line
+;;;; Mode Line
 
 ;; NOTE: Emacs 31 is going to bring mode-line-collapse-minor-modes, apply that
 ;; once it has landed. I'm tired of not having a built-in way to disable minor
@@ -519,66 +639,79 @@ it stops working, check the diffs."
 ;; in these internal data structures like this. It works (for now) but you
 ;; shouldn't do it. I'm just lazy.
 
-(if mememe/assume-small-screen (use-package emacs :custom (mode-line-compact t))
+(when mememe/assume-small-screen
+      (setopt mode-line-compact          t)
+      (setopt mode-line-percent-position nil)) ; Who ever needs this?
 
-  ;; otherwise...
-  (use-package emacs
-    :custom
-    (mode-line-compact 'long)
-    (mode-line-percent-position nil)    ; Who ever needs this?
-    (mode-line-format
-     `("%e"
-       mode-line-front-space
-       (:propertize
-        (""
-         mode-line-mule-info
-         mode-line-client
-         mode-line-modified
-         mode-line-remote
-         mode-line-window-dedicated)
-        display (min-width (6.0)))
+(unless mememe/assume-small-screen
+  (setopt mode-line-compact 'long)      ; `list-packages' wigs out otherwise,
+                                        ; IDK why. INREQ.
 
-       mode-line-frame-identification
-       mode-line-buffer-identification
-       " "                              ; Reduced from 3 spaces.
-       mode-line-position
-       (project-mode-line project-mode-line-format)
-       (vc-mode vc-mode)
+  (setopt mode-line-percent-position nil)
 
-       " "
+  (setopt
+   mode-line-format
+   '("%e"
+     mode-line-front-space
+     (:propertize
+      (""
+       mode-line-mule-info
+       mode-line-client
+       mode-line-modified
+       mode-line-remote
+       mode-line-window-dedicated)
+      display (min-width (6.0)))
 
-       ;; Ugly HACK To Pull Out Compilation / Recursive Edit Status & Major Mode
+     mode-line-frame-identification
+     mode-line-buffer-identification
 
-       ;; I tried using backquote, but It didn't work so I clearly messed it up
-       ;; somehow. :/ Really should just write explicitly...
-       (:eval
-        (format-mode-line
-         (list
-          (nth 0 mode-line-modes)           ; Compilation status
-          (nth 1 mode-line-modes)           ; Recursive edit open brackets
-          ;; ...                            ; Literal ")"
-          (nth 3 mode-line-modes)           ; Major mode
-          (nth 4 mode-line-modes)           ; Process status
-          (car (last mode-line-modes 2))))) ; Recursive edit closing brackets
+     " "                              ; Reduced from 3 spaces.
 
-       mode-line-format-right-align
+     mode-line-position
 
-       ;; mode-line-modes
+     ;; " "                           ; Spacer I've removed
 
-       ;; Ugly HACK To Pull Out Minor Modes
-       (:eval
-        (format-mode-line
-         (append
-          (butlast (nthcdr 5 mode-line-modes) 3) ; List of minor modes
-          ;; ...                                 ; Literal ")"
-          ;; ...                                 ; Recursive edit closing [s
-          (last mode-line-modes))))              ; Literal spacer " "
+     ;; Ugly HACK To Pull Out Compilation / Recursive Edit Status & Major Mode
 
-       mode-line-misc-info
-       " "                              ; Extra spacer I've added.
-       mode-line-end-spaces))))
+     ;; I tried using backquote, but it didn't work. I clearly messed it up
+     ;; somehow. :/ Really should just write this all explicitly...
+     (:eval
+      (format-mode-line
+       (list
+        (nth 0 mode-line-modes)           ; Compilation status
+        (nth 1 mode-line-modes)           ; Recursive edit open brackets
+        ;; ...                            ; Literal ")"
+        (nth 3 mode-line-modes)           ; Major mode
+        (nth 4 mode-line-modes)           ; Process status
+        (car (last mode-line-modes 2))))) ; Recursive edit closing brackets
+
+     " "                                ; Spacer I've added.
+
+     (project-mode-line project-mode-line-format)
+     (vc-mode vc-mode)
+
+     mode-line-format-right-align
+
+     ;; mode-line-modes
+
+     ;; Ugly HACK To Pull Out Minor Modes
+     (:eval
+      (format-mode-line
+       (append
+        (butlast (nthcdr 5 mode-line-modes) 3) ; List of minor modes
+        ;; ...                                 ; Literal ")"
+        ;; ...                                 ; Recursive edit closing brackets
+        (last mode-line-modes))))              ; Literal spacer " "
+
+     mode-line-misc-info
+     " "                              ; Extra spacer I've added.
+     mode-line-end-spaces)))
 
 ;;; Configuring Editor Behaviors
+
+;;;; Disable GUI Dialog Boxes
+
+(setopt use-dialog-box nil)
 
 ;;;; Window-Splitting
 
@@ -593,7 +726,7 @@ it stops working, check the diffs."
 
 ;; Who needs Caps Lock?
 
-(defvar mememe/disabled-to-enable '(upcase-region downcase-region)
+(defconst mememe/disabled-to-enable '(upcase-region downcase-region)
   "Disabled commands to enable on startup.")
 
 (dolist (command mememe/disabled-to-enable)
@@ -664,7 +797,7 @@ parents) is listed in `mememe/delete-trailing-whitespace-exempt-modes'."
 
 ;; and I also want a few extra convenience helpers.
 
-;;;; Functions
+;;;; Functions & Commands
 
 (defun mememe/unfill-paragraph ()
   "Un-fill a paragraph at point.
@@ -673,16 +806,19 @@ Essentially the opposite of `fill-paragraph'"
   (interactive)
   (let ((fill-column (point-max)))
     (fill-paragraph nil)))
+(keymap-set global-map "M-Q" #'mememe/unfill-paragraph)
 
-(defun mememe/yank-pop-forwards (arg)
-  "`yank-pop' with a reversed understanding of the prefix argument."
+(defun mememe/yank-pop-forwards (uarg)
+  "`yank-pop' with a reversed understanding of the prefix uargument."
   (interactive "p")
-  (yank-pop (- arg)))
+  (yank-pop (- uarg)))
+(keymap-set global-map "M-Y" #'mememe/yank-pop-forwards)
 
-(defun mememe/deactive-mark (arg)
+(defun mememe/deactivate-mark (uarg)
   "Interactive wrapper around `deactivate-mark'."
   (interactive "p")
-  (deactivate-mark arg))
+  (deactivate-mark uarg))
+(keymap-set global-map "C-S-SPC" #'mememe/deactivate-mark)
 
 (defun mememe/dump-buffer-local-variables ()
   (interactive)
@@ -691,31 +827,112 @@ Essentially the opposite of `fill-paragraph'"
       nil
     (prin1 (buffer-local-variables))))
 
+(defun mememe/insert-zwsp (uarg)
+  "Insert zero-width spaces according to prefix argument."
+  (interactive "p")
+  (insert-char #x200b uarg))
+
+(defun mememe/cdmktempdir ()
+  "Create a temporary directory with mktemp and visit it with `dired'."
+  (interactive)
+  (when-let* ((tempdir (condition-case nil
+                           (with-temp-buffer
+                             (call-process "mktemp" nil t nil "-d")
+                             (string-trim (buffer-string)))
+                         (file-missing
+                          (message "Unable to call mktemp, is it installed?")
+                          nil))))
+    (message tempdir)
+    (dired tempdir)))
+
+(require 'url)
+
+(defun mememe/region-or-word-at-point-no-properties ()
+  "Return the region as a string, or the word at point as a string.
+
+Properties are stripped, non-coniiguous regions are concatenated."
+  (if (region-active-p)
+      (let ((region-text (funcall region-extract-function)))
+        (substring-no-properties (if (listp region-text)
+                                     (apply #'concat region-text)
+                                   region-text)))
+    (word-at-point t)))
+
+(defun mememe/wiktionary-region-or-word ()
+  "Search for the region or word at point on the English Wiktionary."
+  (interactive)
+  (browse-url-xdg-open
+   (concat
+    "https://en.wiktionary.org/wiki/Special:Search?go=Try+exact+match&search="
+    (url-hexify-string (mememe/region-or-word-at-point-no-properties)
+                       url-query-key-value-allowed-chars))))
+
+(defun mememe/wikipedia-region-or-word ()
+  "Search for the region or word at point on the English Wiktionary."
+  (interactive)
+  (browse-url-xdg-open
+   (concat
+    "https://en.wikipedia.org/wiki/Special:Search?go=Try+exact+match&search="
+    (url-hexify-string (mememe/region-or-word-at-point-no-properties)
+                       url-query-key-value-allowed-chars)
+    "&ns0=1")))
+
+(defun mememe/wiktionary-region-or-word ()
+  "Search for the region or word at point on the Wikipedia."
+  (interactive)
+  (browse-url-xdg-open
+   (concat
+    "https://en.wiktionary.org/wiki/Special:Search?go=Try+exact+match&search="
+    (url-hexify-string (mememe/region-or-word-at-point-no-properties)
+                       url-query-key-value-allowed-chars)
+    "&ns0=1")))
+
 ;;;; Keys
 
 (when mememe/swap-backspace-and-del
-  (keyboard-translate ?\C-h ?\C-?))
+  ;; (keyboard-translate ?\C-h ?\C-?)
+  (key-translate "C-h" "<DEL>")
+  (keymap-set global-map "C-x ?" 'help-command))
 
 (when (key-valid-p (string-trim mememe/key-prefix))
   (unbind-key (string-trim mememe/key-prefix) global-map))
 
-(dolist (binding
-         (list (cons "C-x 8 z"
-                     (string (char-from-name "ZERO WIDTH SPACE")))
-               (cons "M-Q"
-                     #'mememe/unfill-paragraph)
-               (cons "M-Y"
-                     #'mememe/yank-pop-forwards)
-               (cons "C-S-SPC"
-                     #'mememe/deactive-mark)
-               (cons (format "%ss" mememe/key-prefix)
-                     "¯ \\ _ ( ツ ) _ / ¯")
-               (cons (format "%sr" mememe/key-prefix)
-                     #'query-replace-regexp)
-               (cons (format "%s<home>" mememe/key-prefix)
-                     #'mememe/dump-buffer-local-variables)))
+(defvar-keymap mememe/insert-map :repeat t)
+(keymap-set mememe/insert-map "H-s" "¯ \\ _ ( ツ ) _ / ¯") ; ¯\_(ツ)_/¯
+(keymap-set mememe/insert-map "s"   "¯ \\ _ ( ツ ) _ / ¯") ; ¯\_(ツ)_/¯
+(keymap-set mememe/insert-map "H-z" #'mememe/insert-zwsp)  ; ZWSP
+(keymap-set mememe/insert-map "z"   #'mememe/insert-zwsp)  ; ZWSP
 
-  (keymap-set global-map (car binding) (cdr binding)))
+(keymap-set global-map (format "%si" mememe/key-prefix) mememe/insert-map)
+(keymap-set global-map "C-c i" mememe/insert-map)
+
+(defvar-keymap mememe/toggle-map)
+(keymap-set global-map (format "%st" mememe/key-prefix) mememe/toggle-map)
+(keymap-set global-map "C-c t" mememe/toggle-map)
+
+(defvar-keymap mememe/search-and-replace-map
+  :repeat t
+  "H-s" #'search-forward-regexp
+  "s"   #'search-forward-regexp
+  "H-r" #'query-replace-regexp
+  "r"   #'query-replace-regexp)
+(keymap-set global-map
+            (format "%ss" mememe/key-prefix)
+            mememe/search-and-replace-map)
+(keymap-set global-map "C-c s" mememe/search-and-replace-map)
+
+(defvar-keymap mememe/misc-map
+  "H-<home>" #'mememe/dump-buffer-local-variables
+  "<home>"   #'mememe/dump-buffer-local-variables
+  "H-a"      #'align-regexp
+  "a"        #'align-regexp
+  "H-w H-p"  #'mememe/wikipedia-region-or-word
+  "w p"      #'mememe/wikipedia-region-or-word
+  "H-w H-t"  #'mememe/wiktionary-region-or-word
+  "w t"      #'mememe/wiktionary-region-or-word)
+
+(keymap-set global-map (format "%sx" mememe/key-prefix) mememe/misc-map)
+(keymap-set global-map "C-c x" mememe/misc-map)
 
 ;;; Global Mode Configuration
 
@@ -733,7 +950,7 @@ Essentially the opposite of `fill-paragraph'"
 ;;;; `column-number-mode' (built-in)
 
 ;; Display column number in the mode line, next to the line number. Looks like
-;; this: (322,79)
+;; this: (920,14)
 
 (use-package simple :custom (column-number-mode t))
 
@@ -745,6 +962,35 @@ Essentially the opposite of `fill-paragraph'"
   :ensure t
   :custom (company-idle-delay 0.1)) ; how long to wait until popup
 
+;;;; `conf-mode'
+
+(defconst mememe/equals-header-regexp
+  "[^=]\\(\\(=\\{2,\\}\\) [A-Z0-9\\.!?:;()\" -]+ \\2\\)[^=]"
+  "Match strings of uppercase letters surrounded by balanced \"=\" signs.
+
+Actual match is contained within capture group 1.")
+
+(defun mememe/comment-header-p (bound)
+  "Comment header matcher for `font-lock-keywords'.
+
+Returns non-nil and updates `match-data' if it matches, as prescribed by
+font-lock-keywords."
+  (cl-loop while (re-search-forward mememe/equals-header-regexp bound t)
+           ;; See `parse-partial-sexp' value 4. Non-nil if inside comment.
+           if (save-excursion (nth 4 (syntax-ppss (match-beginning 1))))
+           return t))
+
+(defun mememe/conf-mode-font-lock-add-keywords ()
+  (font-lock-add-keywords nil
+                          '((mememe/comment-header-p
+                             1
+                             '(:weight bold :foreground "#60afef")
+                             prepend))))
+
+(use-package conf-mode
+  :defer t
+  :hook ((conf-mode . mememe/conf-mode-font-lock-add-keywords)))
+
 ;;;; `display-fill-column-indicator' (built-in)
 
 ;; Displays a visual indication of where the fill column is. We're gonna enable
@@ -753,7 +999,11 @@ Essentially the opposite of `fill-paragraph'"
 (use-package display-fill-column-indicator
   :defer t
   :hook
-  ((gitattributes-mode conf-mode prog-mode)
+  ((conf-mode
+    prog-mode
+    ;; Derives from `text-mode' instead of either of the previous two, for
+    ;; whatever reason.
+    gitattributes-mode)
    .
    display-fill-column-indicator-mode))
 
@@ -770,8 +1020,10 @@ Essentially the opposite of `fill-paragraph'"
     image-mode
     magit-status-mode
     special-mode
+    speedbar-mode
     term-mode
-    tetris-mode)
+    tetris-mode
+    vterm-mode)
   "Major modes to exempt from `global-display-line-numbers-mode'.
 
 Modes which are derived (parented by) from listed modes will also be
@@ -802,6 +1054,27 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package editorconfig :custom (editorconfig-mode t))
 
+;;;; The `electric-*-mode's (built-in))
+
+;; Don't want to change whether any of these are enable from default, but I'd
+;; like to be able to easily toggle them on or off.
+
+(use-package elec-pair
+  :defer t
+  :bind (:map
+         mememe/toggle-map
+         ("H-e H-p" . electric-pair-mode)
+         ("e p" . electric-pair-mode)))
+
+(use-package electric
+  :defer t
+  :bind (:map
+         mememe/toggle-map
+         ("H-e H-i" . electric-indent-mode)
+         ("e i" . electric-indent-mode)
+         ("H-e H-l" . electric-layout-mode)
+         ("e l" . electric-layout-mode)))
+
 ;;;; `flycheck-mode'
 
 ;; Automatic syntax checking.
@@ -819,6 +1092,12 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
   :defer t
   :hook
   (((prog-mode conf-mode) . flyspell-prog-mode) (text-mode . flyspell-mode)))
+
+;;;; `frameshot-mode'
+
+;; Screenshots!
+
+(use-package frameshot :ensure t :defer t)
 
 ;;;; `hl-todo-mode'
 
@@ -849,7 +1128,8 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
      ("XXXX*" . "#cc9393")
      ;; my own additions begin here
      ("INREQ" . "#9beeef")
-     ("NEEDS INFO" . "#9beeef")))
+     ("NEEDS INFO" . "#9beeef")
+     ("REQUIRES" . "#9eef00")))
   (hl-todo-highlight-punctuation "!:"))
 
 ;;;; `hs-minor-mode' (built-in)
@@ -868,13 +1148,13 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;; `list-buffers' but strictly more powerful.
 
-(use-package ibuffer :bind ("C-x C-b" . ibuffer))
+(use-package ibuffer :defer t :bind ("C-x C-b" . ibuffer))
 
 ;;;; `icomplete-mode' (built-in)
 
 ;; Automatic completion of things in the minibuffer.
 
-(use-package icomplete :custom (icomplete-mode t))
+(use-package icomplete :defer t :custom (icomplete-mode t))
 
 ;;;; `inheritenv'
 
@@ -891,24 +1171,31 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;;;; `lsp-mode'
 
-;; The other Language Server Protocol implementer.
+;; The other Language Server Protocol implementation for Emacs. Arguably the
+;; better one.
 
-;; I mostly dislike electric punctuation (and if I wanted them I'd rather just
-;; enable electric-*-mode), so I've disabled the similar LSP feature.
+;; I really don't like it when automatic punctuation matching is on all the
+;; time, so I've disabled this LSP "feature".
 
 (when mememe/use-lsp (use-package lsp-mode
                        :ensure t
                        :defer t
                        :custom (lsp-enable-on-type-formatting nil)))
 
-(when mememe/use-lsp (use-package lsp-ui :ensure t :defer t))
+(when mememe/use-lsp (use-package lsp-ui :ensure t :after lsp-mode))
 
 ;;;; `menu-bar-mode' (built-in)
 
-;; I don't hate the menu bar. /But/ I want an easy-to-remember way to turn it
+;; I don't hate the menu bar. /But/ I do want an easy-to-remember way to turn it
 ;; off.
 
-(keymap-set global-map (format "%su" mememe/key-prefix) #'menu-bar-mode)
+(use-package menu-bar
+  :defer t
+  :custom (menu-bar-mode nil)
+  :bind
+  (:map mememe/toggle-map
+        ("H-m H-b" . menu-bar-mode)
+        ("m b"     . menu-bar-mode)))
 
 ;;;; `outline-minor-mode' (built-in)
 
@@ -917,9 +1204,30 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package outline :defer t :custom (outline-minor-mode-cycle t))
 
+;;;; `prog-mode' (built-in)
+
+;; Highlight markdown-style equals sign headers in comments, just like
+;; we did in `conf-mode'.
+
+(defun mememe/prog-mode-font-lock-add-keywords ()
+  (font-lock-add-keywords nil
+                          '((mememe/comment-header-p
+                             1
+                             '(:weight bold :foreground "#60afef")
+                             prepend))))
+
+(use-package prog-mode
+  :defer t
+  :hook ((prog-mode . mememe/prog-mode-font-lock-add-keywords)))
+
 ;;;; `rainbow-mode'
 
-;; Colorize RGB hex strings like #b51a43 or #667a76 with that color.
+;; Colorize RGB hex strings like #b51a43 or #667a76 with that color as the
+;; background face.
+
+;; For whatever reason, this package does not obey the typical minor-mode
+;; conventions. You can't toggle it off with numeric arguments, for example.
+;; PITA! One day I'll wrap or fork it.
 
 (use-package rainbow-mode :defer t :ensure t)
 
@@ -929,6 +1237,10 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 ;; this is great!
 
 (use-package savehist :custom (savehist-mode t))
+
+;;;; `scroll-bar-mode' (built-in)
+
+(use-package scroll-bar :custom (scroll-bar-mode nil))
 
 ;;;; `subword-mode' (built-in)
 
@@ -941,25 +1253,25 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;; Tabs!
 
-(dolist (binding
-         (list (cons (format "%st" mememe/key-prefix)
-                     #'tab-bar-mode)
-
-               (cons "C-x t n"          ; Was `tab-duplicate'.
-                     #'tab-bar-switch-to-next-tab)
-
-               (cons "C-x t p"          ; Was `project-other-tab-command'.
-                     #'tab-bar-switch-to-prev-tab)))
-
-  (keymap-set global-map (car binding) (cdr binding)))
-
-(use-package tab-bar :custom (tab-bar-new-tab-to 'rightmost))
+(use-package tab-bar
+  :defer t
+  :custom (tab-bar-new-tab-to 'rightmost)
+  :bind
+  (("C-x t n" . tab-bar-switch-to-next-tab) ; Was `tab-duplicate'.
+   ("C-x t p" . tab-bar-switch-to-prev-tab) ; Was `project-other-tab-command'.
+   :map mememe/toggle-map
+   ("H-t H-b" . tab-bar-mode)
+   ("t b"     . tab-bar-mode)))
 
 ;;;; `text-scale-mode' (built-in)
 
 ;; Not the best for scaling text, but not the worst.
 
 (use-package face-remap :custom (global-text-scale-adjust-resizes-frames t))
+
+;;;; `tool-bar-mode' (built-in)
+
+(use-package tool-bar :custom (tool-bar-mode nil))
 
 ;;;; `vlf-mode'
 
@@ -993,6 +1305,9 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
   :ensure t
   :custom (yas-global-mode t)
   :hook (minibuffer-setup . yas-minor-mode)
+
+  ;; We have to do our keybinding here because `use-package' isn't smart enough
+  ;; to understand this constant.
   :config (keymap-set minibuffer-local-map "<tab>" yas-maybe-expand))
 
 (use-package yasnippet-snippets
@@ -1014,11 +1329,10 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;;;; Assembly
 
-;; Always use `'nasm-mode' over `asm-mode' on x86 or x64. I don't give a darn
-;; about gas.
+;; Always use `'nasm-mode' over `asm-mode' on x86. Not touching gas with a
+;; ten-meter pole.
 
-(when (or (string-equal mememe/native-assembly-language 'x86_64)
-          (string-equal mememe/native-assembly-language 'x86))
+(when (eq mememe/default-assembly-language 'x86)
 
   (dolist (mode-association auto-mode-alist)
     (when (eq (cdr mode-association) 'asm-mode)
@@ -1044,21 +1358,24 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package dired-x :after (dired) :hook (dired-mode . dired-extra-startup))
 
-(use-package dired
-  :defer t
-  :custom
-  (dired-use-ls-dired t)
-  (dired-maybe-use-globstar t)
-  (dired-vc-rename-file t)
-  (dired-listing-switches
-   (string-join
-    '("-l" ; long output format, required
-      "--all" ; duh
-      "--si" ; same as ~--human-readable~, but powers of 10³ and not 2¹⁰
-      "--classify") ; "append indicator (one of */=>@|) to entries"
-    " ")))
+(when (assoc-default 'ls mememe/external-dependencies #'eq t)
+  (use-package dired
+    :defer t
+    :custom
+    (dired-use-ls-dired t)
+    (dired-maybe-use-globstar t)
+    (dired-vc-rename-file t)
+    (dired-listing-switches
+     (string-join
+      '("-l"          ; long output format, required
+        "--all"       ; duh
+        "--si"        ; same as ~--human-readable~, but powers of 10 not 2
+        "--classify") ; "append indicator (one of */=>@|) to entries"
+      " "))))
 
-(keymap-set global-map (format "%sf" mememe/key-prefix) #'speedbar)
+(use-package speedbar
+  :defer t
+  :bind (:map mememe/toggle-map ("H-s H-b" . speedbar) ("s b" . speedbar)))
 
 ;;;; Emacs Lisp
 
@@ -1078,9 +1395,11 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package git-modes :ensure t :defer t)
 
-(use-package magit :ensure t :defer t)
-
-(keymap-set global-map (format "%sg" mememe/key-prefix) #'magit-status)
+(when (assoc-default 'git mememe/external-dependencies #'eq t)
+  (use-package magit
+    :ensure t
+    :defer t
+    :bind (:map mememe/toggle-map ("H-g" . magit-status) ("g" . magit-status))))
 
 ;;;; GLSL
 
@@ -1107,32 +1426,34 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;;;; Java
 
-;; Java is not a language I want to write without an LSP.
+;; Java is not a language I want to write without a language server.
 
-(when mememe/use-lsp (use-package lsp-java
-                       :ensure t
-                       :after lsp-mode
-                       :custom
-                       (lsp-java-vmargs
-                        '("-XX:+UseParallelGC"
-                          "-XX:GCTimeRatio=4"
-                          "-XX:AdaptiveSizePolicyWeight=90"
-                          "-Dsun.zip.disableMemoryMapping=true"
-                          "-Xmx2G" ; locks up really easily without this.
-                          "-Xms100m"))
-                       (lsp-java-configuration-runtimes
-                        '[(:name
-                           "JavaSE-17"
-                           :path
-                           "/usr/lib/jvm/java-17-openjdk/"
-                           :default
-                           t)
-                          (:name
-                           "JavaSE-21"
-                           :path
-                           "/usr/lib/jvm/java-21-openjdk/")])))
+(when (and mememe/use-lsp
+           (assoc-default 'eclipse-jdt-ls
+                          mememe/external-dependencies
+                          #'eq
+                          t)
+           (assoc-default 'jdks
+                          mememe/external-dependencies
+                          #'eq
+                          t))
+  (use-package lsp-java
+    :ensure t
+    :after lsp-mode
+    :custom
+    (lsp-java-vmargs
+     '("-XX:+UseParallelGC"
+       "-XX:GCTimeRatio=4"
+       "-XX:AdaptiveSizePolicyWeight=90"
+       "-Dsun.zip.disableMemoryMapping=true"
+       "-Xmx2G"                         ; locks up really easily without this
+       "-Xms100m"))
+    (lsp-java-configuration-runtimes (assoc-default 'jdks
+                                                    mememe/external-dependencies
+                                                    #'eq
+                                                    nil)))
 
-(when mememe/use-lsp (use-package lsp-mode :ensure t :defer t :hook java-mode))
+  (use-package lsp-mode :ensure t :defer t :hook java-mode))
 
 ;;;; Kotlin
 
@@ -1145,7 +1466,8 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 ;; Unless I choose otherwise, I want all documentation to share one window.
 
-(defvar mememe/doc-buffer-modes '(help-mode apropos-mode Man-mode Info-mode)
+(defvar mememe/doc-buffer-modes
+  '(help-mode apropos-mode finder-mode Man-mode Info-mode shortdoc-mode)
   "Major-modes we'll consider \"Documentation\".")
 
 (defun mememe/doc-buffer-p (buffer-or-name &rest _args)
@@ -1162,10 +1484,9 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
  'display-buffer-alist
  `(mememe/doc-buffer-p (display-buffer-reuse-window
                         display-buffer-reuse-mode-window
-                        display-buffer-use-least-recent-window
-                        display-buffer-pop-up-window)
-                       ,(cons 'mode mememe/doc-buffer-modes)
-                       (inhibit-switch-frame . t)
+                        display-buffer-same-window)
+                       (mode                       . ,mememe/doc-buffer-modes)
+                       (inhibit-switch-frame       . t)
                        (post-command-select-window . nil)))
 (use-package
  help-mode
@@ -1259,7 +1580,7 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package org-present :ensure t :after org-mode)
 
-(use-package ol-tel :load-path "~/.emacs.d/mememe" :after org-mode)
+(use-package ol-tel :after org-mode)
 
 ;;;; PHP
 
@@ -1288,27 +1609,69 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
   :defer t
   :custom (rust-rustfmt-switches '("--edition" "2024")))
 
-(when mememe/use-lsp (use-package rustic
-                       :ensure t
-                       :after (lsp-mode rust-mode)
-                       :custom (rustic-compile-backtrace "1")
-                       :config
-                       (add-to-list 'compilation-environment
-                                    "RUST_BACKTRACE=1")))
+(when (and mememe/use-lsp
+           (assoc-default 'rust-analyzer mememe/external-dependencies #'eq t))
 
-(when mememe/use-lsp (use-package lsp-mode
-                       :ensure t
-                       :defer t
-                       :custom
-                       (lsp-rust-analyzer-diagnostics-disabled
-                        ["inactive-code"])))
+  (use-package rustic
+    :ensure t
+    :after (lsp-mode rust-mode)
+    :custom (rustic-compile-backtrace "1")
+    :config (add-to-list 'compilation-environment "RUST_BACKTRACE=1"))
+
+  (use-package lsp-mode
+    :ensure t
+    :defer t
+    :custom (lsp-rust-analyzer-diagnostics-disabled ["inactive-code"])))
 
 ;;;; Shell
 
 ;; TODO: Lots to improve here, haven't gotten around to any of it. I'd like to
 ;; get Emacs to understand my aliases, at the very least.
 
-(use-package shell :custom (explicit-shell-file-name "/bin/bash"))
+(defconst mememe/eshell-prompt-chars-to-lead 5
+  "How many characters to lead the eshell prompt with.")
+
+(defconst mememe/eshell-prompt-dir-levels-to-follow 2
+  "How many directory levels to list in eshell prompt.")
+
+(defun mememe/eshell-prompt-function ()
+  (let* ((ps1 '())
+         (cwd (abbreviate-file-name (eshell/pwd)))
+         (cwd-leading-len (min (string-width cwd)
+                               mememe/eshell-prompt-chars-to-lead))
+
+         (cwd-leading (substring cwd
+                                 0
+                                 cwd-leading-len))
+         (cwd-parts (split-string cwd "/" t))
+
+         (cwd-last-parts (last cwd-parts
+                               mememe/eshell-prompt-dir-levels-to-follow))
+         (cwd-last-parts-joined (string-join cwd-last-parts "/"))
+         (cwd-rejoined (concat cwd-leading "../" cwd-last-parts-joined)))
+
+    (push (if (>= (string-width cwd-rejoined) (string-width cwd))
+              cwd cwd-rejoined)
+          ps1)
+
+    (unless (eshell-exit-success-p)
+      (push (format " [%d]" eshell-last-command-status) ps1))
+
+    (push (cond ((= (file-user-uid) 0) " Y ") (" ,\\ ")) ps1)
+
+    (apply #'concat (nreverse ps1))))
+
+(use-package eshell
+  :defer t
+  :custom (eshell-prompt-function #'mememe/eshell-prompt-function))
+
+(when (assoc-default 'bash mememe/external-dependencies #'eq t)
+  (use-package shell
+    :defer t
+    :custom (explicit-shell-file-name "/usr/bin/bash")))
+
+(when (assoc-default 'libvterm mememe/external-dependencies #'eq t)
+  (use-package vterm :ensure t :defer t))
 
 ;;;; Slint
 
@@ -1321,17 +1684,14 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 
 (use-package slint-mode :defer t :ensure t)
 
-(when mememe/use-lsp (use-package lsp-mode :ensure t :defer t :hook slint-mode))
+(when (and mememe/use-lsp
+           (assoc-default 'slint-lsp mememe/external-dependencies #'eq t))
+  (use-package lsp-mode :ensure t :defer t :hook slint-mode))
 
 (use-package rainbow-mode
   :ensure t
   :defer t
-  :hook
-  (slint-mode
-   .
-   (lambda ()
-     (unless rainbow-mode
-       (rainbow-mode)))))
+  :hook (slint-mode . (lambda () (unless rainbow-mode (rainbow-mode)))))
 
 ;;;; YAML
 

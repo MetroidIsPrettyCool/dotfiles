@@ -1,54 +1,73 @@
 #!/bin/bash
-set -x
 
-# intended to be run after i3 starts to set the wallpaper, launch default applications, etc.
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
 
-# ==== VERIFY ALL IS WELL ====
+# ==== DESCRIPTION ====
 
-# restart networking profile if it's not up
-#
+# Intended to be run after i3 starts to set the wallpaper, launch default applications, etc.
+
+# REQUIRES: ./banish-firefox.sh, ./banish-todolist.sh, bash, blueberry, coreutils, discord, dunst, emacs, i3,
+# ./launch-polybar.sh, ./launch-thunderbird.sh, netctl, pcmanfm, picom, solaar, ./themeback.sh, vlc, ./wlanrestart.sh,
+# xcowfortune
+
+# ==== SHELL OPTIONS ====
+
+set -xuo pipefail
+
+# ==== CONSTANTS ====
+
+declare -r home_netctl_profile='trogdor'
+
+# ==== CODE ====
+
+# == VERIFY ALL IS WELL ==
+
+# restart networking profile, if it's not up
+
 # kinda hacky, might wanna rewrite this as a systemd unit or something
-home_netctl_profile='trogdor'
-if ! netctl is-active "${home_netctl_profile}" 1>/dev/null 2>/dev/null; then
-    $MY_SCRIPTS_DIR/wlanrestart.sh "${home_netctl_profile}"
+if ! netctl is-active "${home_netctl_profile}" &>/dev/null; then
+    "${MY_SCRIPTS_DIR}"/wlanrestart.sh "${home_netctl_profile}"
 fi
 
-# ==== SET WALLPAPER AND GENERATE PROCEDURAL SYSTEM THEMES ====
+# == SET WALLPAPER AND GENERATE PROCEDURAL SYSTEM THEMES ==
 
 # # select a random background image and move it to .cache/randback
-# $MY_SCRIPTS_DIR/randback.sh
+# "${MY_SCRIPTS_DIR}"/randback.sh
 
 # take whatever image is in .cache/randback and set it as wallpaper + generate system theme from it
-$MY_SCRIPTS_DIR/themeback.sh
+"${MY_SCRIPTS_DIR}"/themeback.sh
 
-# ==== START VARIOUS GUI-ONLY DAEMONS ====
-emacs --daemon # eeeeeeemacs
-dunst & # notification daemon
-solaar -w hide & # Logitech I/O device daemon
-blueberry-tray # application for managing Bluetooth devices
+# == START VARIOUS GUI-ONLY DAEMONS ==
+emacs --daemon          # eeeeeeemacs
+dunst &                 # notification daemon
+solaar -w hide &        # Logitech I/O device daemon
+blueberry-tray          # application for managing Bluetooth devices
 pcmanfm --daemon-mode & # file manager daemon, for background volume management, mostly
-picom & # compositor
+picom &                 # compositor
 
-# ==== XCOWFORTUNE :) ====
+# == XCOWFORTUNE :) ==
 xcowfortune &
 
-# ==== START SYSTEM INFORMATION BARS ====
-$MY_SCRIPTS_DIR/launch-polybar.sh &
+# == START SYSTEM INFORMATION BARS ==
+"${MY_SCRIPTS_DIR}"/launch-polybar.sh &
 
-# ==== START DEFAULT APPLICATIONS ====
-vlc & # for media, assigned to workspace 9 in my i3 config
-discord & # for IM, assigned to workspace 10 in my i3 config
-$MY_SCRIPTS_DIR/launch-thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
+# == START DEFAULT APPLICATIONS ==
+vlc &                                       # for media, assigned to workspace 9 in my i3 config
+discord &                                   # for IM, assigned to workspace 10 in my i3 config
+"${MY_SCRIPTS_DIR}"/launch-thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
 
-# we can only run one of these at a time, as they need to have exclusive access to `i3-msg` in order to move their
-# eponymous applications to their destination workspaces without outright assigning their classes
-#
-# TODO: figure out if I can just assign them temporarily and remove this exclusive access problem
+# We can only run one of these "banish" scripts at a time, as they need to have exclusive access to `i3-msg` to focus
+# their eponymous applications and move them to their destination workspaces.
 
-# Emacs client with org-mode TODO list open, auto-moved to workspace 2 by the script
-timeout 15s $MY_SCRIPTS_DIR/banish-todolist.sh
+# TODO: figure out if I can just assign them to workspaces by class temporarily, and remove this exclusive access
+# problem
+
+# Emacs client with org-mode to-do list open, auto-moved to workspace 2 by the script
+timeout 15s "${MY_SCRIPTS_DIR}"/banish-todolist.sh
+
 # Firefox web browser, auto-moved to workspace 1 by the script
-$MY_SCRIPTS_DIR/banish-firefox.sh
+"${MY_SCRIPTS_DIR}"/banish-firefox.sh
 
-# ==== FINAL TOUCHES ====
+# == FINAL TOUCHES ==
 i3-msg --quiet 'workspace 1'

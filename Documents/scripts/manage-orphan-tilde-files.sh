@@ -1,7 +1,23 @@
 #!/bin/bash
-set -e
 
-# as in any file who's path/name matches the regex `/(.*)~/`, and `\1` does not exist in the same directory
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Execute a given command on every orphaned tilde file in a given directory, recursively. (That being: any file who's
+# path or name matches the regex /(.*)~/ when \1 does not exist in the same directory.)
+
+# Not that useful compared to what Emacs can do by itself, and not that well-implemented. I just wanted the experience
+# with case statements.
+
+# REQUIRES: bash, coreutils, findutils, sed
+
+# ==== SHELL OPTIONS ====
+
+set -euo pipefail
+
+# ==== CODE ====
 
 display_help_instead='false'
 origin="${PWD}"
@@ -9,7 +25,8 @@ manage_command='echo'
 
 unknown_arg=''
 
-# ==== PARSE ARGUMENTS ====
+# == PARSE ARGUMENTS ==
+
 prev_arg=''
 for arg in "$@"; do
     case "$prev_arg" in
@@ -57,27 +74,17 @@ flags:
     exit
 fi
 
-# ==== FIND ====
+# == FIND ==
 
-# change IFS to ensure spaces get treated properly by bash's array parser
-#
-# '🏑' is just some random character. I picked it 'cause the name started with 'field'.
-#
-# hopefully nobody is creating files with that in their names
-saved_ifs="$IFS"
-IFS=🏑
+readarray -t tilde_files < <(find "${origin}" -name '*~' -exec printf '%s\n' {} \;)
 
-tilde_files=($(find "${origin}" -name '*~' -exec printf '%s🏑' {} \;))
+# == EXECUTE ==
 
-# ==== EXECUTE ====
 for tilde_file in "${tilde_files[@]}"; do
     parent_name=$(sed --quiet 's/\(.*\)~/\1/p' <<< "${tilde_file}")
 
     # if it doesn't have a parent
     if [[ ! -e "${parent_name}" ]]; then
-        "${manage_command}" ${tilde_file}
+        "${manage_command}" "${tilde_file}"
     fi
 done
-
-# reset IFS
-IFS="$saved_ifs"

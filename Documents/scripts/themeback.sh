@@ -1,10 +1,27 @@
 #!/bin/bash
+
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Set the wallpaper based on whatever randback spat out, automatically generate themes for different applications with
+# them.
+
+# REQUIRES: bash, ./copy-userchrome.sh, coreutils, oomox, wal
+
+# ==== SHELL OPTIONS ====
+
 set -euxo pipefail
 
-# set wallpaper
+# ==== CODE ====
+
+# == GENERATE THEMES ==
+
+# # set wallpaper
 # feh --bg-scale ~/.cache/randback/*
 
-# # set wallpaper and generate most theme files
+# set wallpaper and generate most of the theme files
 wal -i ~/.cache/randback/*
 
 # # generate GTK theme
@@ -20,6 +37,8 @@ wal -i ~/.cache/randback/*
 #     exit 1
 # fi
 # cp ~/.cache/wal/alacritty.toml ~/.config/alacritty/alacritty.toml
+
+# == COPY FILES ==
 
 [[ -f ~/.cache/wal/colors.Xresources ]]
 if [[ -f ~/.Xresources ]]; then
@@ -43,4 +62,4 @@ fi
 cp  --force ~/.cache/wal/dunstrc ~/.config/dunst/dunstrc
 
 # ensure Firefox userChrome.css has been copied
-$MY_SCRIPTS_DIR/copy-userchrome.sh
+"${MY_SCRIPTS_DIR}"/copy-userchrome.sh

@@ -1,12 +1,14 @@
 set $mod Mod4
 floating_modifier $mod
 
-# ========== Appearance ==========
+# ========== APPEARANCE ==========
 
-# ===== Font =====
+# ===== FONT =====
+
 font pango:Source Code Pro 0
 
-# ===== Colors =====
+# ===== COLORS =====
+
 set_from_resource $fg i3wm.color7 #f0f0f0
 set_from_resource $bg i3wm.color2 #f0f0f0
 
@@ -19,14 +21,16 @@ client.placeholder      $bg     $bg     $fg  $bg       $bg
 
 client.background       $bg
 
-# ===== Gaps =====
+# ===== GAPS =====
+
 for_window [class="^.*"] border none
 gaps inner 0
 gaps outer 4
 
-# ========== Workspaces ==========
+# ========== WORKSPACES ==========
 
-# ===== Names =====
+# ===== NAMES =====
+
 set $ws1 "1"
 set $ws2 "2"
 set $ws3 "3"
@@ -41,7 +45,8 @@ set $ws9 "9"
 # discord (guess what)
 set $ws10 "10"
 
-# ===== Workspace-Monitor Assignments =====
+# ===== WORKSPACE-MONITOR ASSIGNMENTS =====
+
 workspace $ws1 output DP-4.8
 workspace $ws2 output DP-4.8
 workspace $ws3 output DP-4.8
@@ -53,15 +58,20 @@ workspace $ws8 output HDMI-0
 workspace $ws9 output HDMI-0
 workspace $ws10 output HDMI-0
 
-# ===== Window-Workspace Assignments =====
+# ===== WINDOW-WORKSPACE ASSIGNMENTS =====
+
 assign [class="^thunderbird$"] $ws8
 assign [class="^Deadbeef$"] $ws9
 assign [class="^vlc$"] $ws9
 assign [class="^discord$"] $ws10
 
-# ========== Window Floating Assignments ==========
+# ========== WINDOW FLOATING ASSIGNMENTS ==========
+
 for_window [window_role="pop-up"] floating enable
 for_window [window_role="task_dialog"] floating enable
+
+# So many goddamned programs out there that don't mark their popups and dialogs right. Here's a collection of my manual
+# corrections:
 
 for_window [class="org-betacraft-launcher-Launcher" title="[Ss]elect"] floating enable
 for_window [class="org-betacraft-launcher-Launcher" title="[Ss]ettings"] floating enable
@@ -69,8 +79,7 @@ for_window [class="org-betacraft-launcher-Launcher" title="Addons list"] floatin
 
 for_window [class="Gnome-screenshot" title="Screenshot"] floating enable
 
-# grrrr
-for_window [title="Kingdom of Loathing documentation — Mozilla Firefox"] floating enable
+for_window [title="Kingdom of Loathing documentation — Mozilla Firefox"] floating enable # grrrr
 
 for_window [class="zoom" title="[zZ]oom(?!( - Free Account)|( Meeting))"] floating enable
 for_window [class="zoom" title="[zZ]oom(?=( - Free Account)|( Meeting))"] floating disable
@@ -79,16 +88,19 @@ for_window [class="Blueberry.py" title="Bluetooth"] floating enable
 
 for_window [class="minecraft-pi"] floating enable
 
-# ========== Keybinds ==========
+for_window [class="software-coley-recaf-launcher-LauncherGui"] floating enable
 
-# ===== i3 controls =====
+# ========== KEYBINDS ==========
+
+# ===== I3 CONTROLS =====
+
 bindsym $mod+Shift+c reload
 
 bindsym $mod+Shift+r restart
 
 bindsym $mod+Shift+e exit
 
-# ===== Workspace Controls =====
+# ===== WORKSPACE CONTROLS =====
 
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
@@ -118,7 +130,7 @@ bindsym $mod+Shift+0 move container to workspace number $ws10
 bindsym $mod+Mod1+1 move workspace to output DP-4.8
 bindsym $mod+Mod1+2 move workspace to output HDMI-0
 
-# ===== Window Controls =====
+# ===== WINDOW CONTROLS =====
 
 # KILL
 bindsym $mod+Shift+q kill
@@ -154,13 +166,18 @@ mode "resize" {
         bindsym Up resize shrink height 10 px or 10 ppt
         bindsym Right resize grow width 10 px or 10 ppt
 
+        bindsym Shift+Left resize shrink width 1 px or 1 ppt
+        bindsym Shift+Down resize grow height 1 px or 1 ppt
+        bindsym Shift+Up resize shrink height 1 px or 1 ppt
+        bindsym Shift+Right resize grow width 1 px or 1 ppt
+
         bindsym Escape mode "default"
         bindsym $mod+r mode "default"
 }
 
 bindsym $mod+r mode "resize"
 
-# ===== Multimedia Controls =====
+# ===== MULTIMEDIA CONTROLS =====
 
 # volume controls
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume $(pactl get-default-sink) +5%
@@ -175,9 +192,9 @@ bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 20
 bindsym XF86AudioPlay exec --no-startup-id "playerctl play-pause"
 bindsym XF86AudioNext exec --no-startup-id "playerctl next"
 bindsym XF86AudioPrev exec --no-startup-id "playerctl previous"
-# note: you can append --player=vlc to only affect vlc, used to have that in, now don't
+# NOTE: you can append --player=vlc to only affect vlc, used to have that in, now don't
 
-# ===== Application Shortcuts =====
+# ===== APPLICATION SHORTCUTS =====
 
 # terminal
 bindsym $mod+Return exec --no-startup-id alacritty
@@ -192,7 +209,7 @@ bindsym $mod+Print exec --no-startup-id xfce4-screenshooter -s ~/Pictures/screen
 # start an emacs client
 bindsym $mod+t exec --no-startup-id emacsclient --alternate-editor= --create-frame
 
-# ===== Misc. Script Shortcuts =====
+# ===== MISC. SCRIPT SHORTCUTS =====
 
 # for games with weird mouse wheel issues (KSP), inverts the scroll direction of my MX Ergo
 bindsym $mod+Home exec --no-startup-id bash "${MY_SCRIPTS_DIR}/toggle-mousewheel-direction.sh"
@@ -204,5 +221,6 @@ bindsym $mod+u exec --no-startup-id setxkbmap us
 # paste from clipboard with paste-xdotool.sh
 bindsym $mod+p exec --no-startup-id bash -c "xclip -out -selection clipboard | \"${MY_SCRIPTS_DIR}/paste-xdotool.sh\""
 
-# ===== Start Programs! =====
+# ===== START PROGRAMS! =====
+
 exec --no-startup-id "${MY_SCRIPTS_DIR}/onstartup.sh"

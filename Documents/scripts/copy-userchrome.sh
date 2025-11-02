@@ -1,11 +1,22 @@
 #!/bin/bash
+
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Automatically create a symbolic link from ~.config/userChrome.css~ to your Firefox's default profiles' ~/chrome/~
+# directories, and copy ~colors.css~ from wal cache to the same.
+
+# REQUIRES: awk, bash, coreutils, firefox, ~./get-default-ff-profiles.awk~, grep, i3, jq, procps-ng
+
+# ==== SHELL OPTIONS ====
+
 set -euxo pipefail
 
-# creates symbolic links from ~.config/userChrome.css~ to your Firefox's default profiles' ~/chrome/~ directories
-#
-# and copies ~colors.css~ from wal cache to the same
+# ==== CODE ====
 
-# make sure said userChrome is real
+# check said userChrome is real
 if [[ ! -f ~/.config/userChrome.css ]]; then
     printf "Unable to locate userChrome.css in your config directory, aborting!\n" 1>&2
     exit 1
@@ -16,14 +27,15 @@ if [[ ! -f ~/.mozilla/firefox/profiles.ini ]]; then
     printf "Unable to locate firefox profiles.ini, aborting!\n" 1>&2
     exit 1
 fi
-profiles=($(awk -f "$(dirname $0)"'/get-default-ff-profiles.awk' ~/.mozilla/firefox/profiles.ini))
+
+readarray -t profiles < <(awk -f "$(dirname "$0")"'/get-default-ff-profiles.awk' ~/.mozilla/firefox/profiles.ini)
 
 # go through 'em all and run da script!
 for profile in "${profiles[@]}"; do
     profile_dir=~/.mozilla/firefox/"${profile}"
 
     if [[ ! -d "${profile_dir}" ]]; then
-        printf "Parsed profile dir ${profile_dir} does not exist, aborting!\n" 1>&2
+        printf "Parsed profile dir %s does not exist, aborting!\n" "${profile_dir}" 1>&2
         exit 1
     fi
 
@@ -35,10 +47,11 @@ for profile in "${profiles[@]}"; do
 
     # if it exists, and isn't a symbolic link pointing where we want it, abort!
     if [[ -e "${chrome_dir}/userChrome.css" ]]; then
-        if [[ ! ( -L "${chrome_dir}/userChrome.css"\
-                      && "$(realpath --canonicalize-existing "${chrome_dir}/userChrome.css")"\
-                = "$(realpath --canonicalize-existing ~/.config/userChrome.css)" ) ]]; then
-            printf "userChrome.css already exists for profile ${profile}, aborting!\n" 1>&2
+        if [[ ! ( -L "${chrome_dir}/userChrome.css" \
+                      && "$(realpath --canonicalize-existing "${chrome_dir}/userChrome.css")" \
+                         = "$(realpath --canonicalize-existing ~/.config/userChrome.css)" ) ]]
+        then
+            printf "userChrome.css already exists for profile %s, aborting!\n" "${profile}" 1>&2
             exit 1
         fi
     else
@@ -46,7 +59,8 @@ for profile in "${profiles[@]}"; do
     fi
 
     # copy colors.css
-    [[ -f ~/.cache/wal/colors.css ]]
+    [[ -f ~/.cache/wal/colors.css ]] # assert it exists
+
     if [[ -f "${chrome_dir}/colors.css" ]]; then
         rm "${chrome_dir}/colors.css"
     elif [[ -L "${chrome_dir}/colors.css" ]]; then

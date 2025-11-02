@@ -1,5 +1,19 @@
 #!/bin/bash
+
+# Any copyright is dedicated to the Public Domain.
+# http://creativecommons.org/publicdomain/zero/1.0/
+
+# ==== DESCRIPTION ====
+
+# Open Thunderbird in a new process, then update the color scheme with pywalfox.
+
+# REQUIRES: bash, coreutils, thunderbird, procps-ng, pywalfox, wal
+
+# ==== SHELL OPTIONS ====
+
 set -euxo pipefail
+
+# ==== CODE ====
 
 thunderbird &
 
