@@ -67,6 +67,7 @@
     (back-to-indentation)
     (down-list)
     (exchange-point-and-mark)
+    (global-text-scale-adjust)
     (ibuffer-filter-by-used-mode ibuffer-mode-map ibuffer)
     (isearch-forward-word)
     (isearch-repeat-forward isearch-mode-map)
@@ -233,11 +234,13 @@ Involves some advice kludgery.")
 
 ;; (debug-on-entry 'get-scratch-buffer-create)
 
-;;;; Load Path
+;;;; Load Paths
 
 ;; I like to put my manually-installed or self-written Elisp under the "lisp"
 ;; directory of my user's Emacs data dir.
 
+(add-to-list 'custom-theme-load-path
+             (expand-file-name "lisp" user-emacs-directory))
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;;;; Packages
@@ -282,11 +285,9 @@ Involves some advice kludgery.")
 
 ;;;; Theme
 
-;; Use the slightly tweaked version of wombat in my .emacs.d. I want a darker
-;; background, I want the fringe to be colored the same as the background, and I
-;; want a better-looking tab bar.
+;; Use my custom theme.
 
-(use-package custom :custom (custom-enabled-themes '(wombat)))
+(use-package custom :custom (custom-enabled-themes '(adora)))
 
 ;;;; Background
 
@@ -453,7 +454,8 @@ into advice."
             (let ((strings-or-formats '()))
               (push '(string ";; The time at startup was: ")
                     strings-or-formats)
-              (push `(datetime ,before-init-time "%H:%M:%S.%N" (face bold))
+              (push `(datetime ,before-init-time "%H:%M:%S.%N"
+                               (face font-lock-type-face))
                     strings-or-formats)
               (push '(string "\n")
                     strings-or-formats)
@@ -461,7 +463,8 @@ into advice."
               (push '(string ";; The time after init was: ")
 
                     strings-or-formats)
-              (push `(datetime ,after-init-time  "%H:%M:%S.%N" (face bold))
+              (push `(datetime ,after-init-time  "%H:%M:%S.%N"
+                               (face font-lock-type-face))
 
                     strings-or-formats)
               (push '(string "\n")
@@ -471,26 +474,19 @@ into advice."
               (push '(string ";; The time is now:         ")
 
                     strings-or-formats)
-              (push `(datetime nil               "%H:%M:%S.%N" (face bold))
+              (push `(datetime nil               "%H:%M:%S.%N"
+                               (face font-lock-type-face))
                     strings-or-formats)
               (push '(string "\n\n")
                     strings-or-formats)
 
               (push '(string ";; Today is ")
                     strings-or-formats)
-              (push '(datetime nil "%A"        (face
-                                                (:weight
-                                                 bold
-                                                 :foreground
-                                                 "#DFA510")))
+              (push '(datetime nil "%A"        (face font-lock-builtin-face))
                     strings-or-formats)
               (push '(string ", ")
                     strings-or-formats)
-              (push '(datetime nil "1%Y-%m-%d" (face
-                                                (:weight
-                                                 bold
-                                                 :foreground
-                                                 "#DFA510")))
+              (push '(datetime nil "1%Y-%m-%d" (face font-lock-builtin-face))
                     strings-or-formats)
               (push '(string ".\n\n")
                     strings-or-formats)
@@ -513,7 +509,7 @@ into advice."
 
                     (push '(string ";; ")
                           strings-or-formats)
-                    (push `(propertize ,cmd-str (face bold))
+                    (push `(propertize ,cmd-str (face font-lock-type-face))
                           strings-or-formats)
                     (push `(string
                             ,(concat ":"
@@ -545,11 +541,7 @@ into advice."
 
               (push '(string ";; ")
                     strings-or-formats)
-              (push '(propertize "Welcome home." (face
-                                                  (:weight
-                                                   bold
-                                                   :foreground
-                                                   "#00FF95")))
+              (push '(propertize "Welcome home." (face font-lock-constant-face))
                     strings-or-formats)
               (push '(string "\n\n")
                     strings-or-formats)
@@ -774,14 +766,14 @@ parents) is listed in `mememe/delete-trailing-whitespace-exempt-modes'."
 
 ;; Just to be safe. I always delete things I don't mean to...
 
-(use-package emacs :custom (delete-by-moving-to-trash t))
+(setopt delete-by-moving-to-trash t)
 
 ;;;; Projects
 
 ;; I like Emacs' new lightweight project system. I don't fully understand it,
 ;; but I like it.
 
-(use-package project :custom (project-mode-line t))
+(use-package project :defer t :custom (project-mode-line t))
 
 ;;; Global Commands and Keys
 
@@ -902,7 +894,6 @@ Properties are stripped, non-coniiguous regions are concatenated."
 (keymap-set mememe/insert-map "s"   "¯ \\ _ ( ツ ) _ / ¯") ; ¯\_(ツ)_/¯
 (keymap-set mememe/insert-map "H-z" #'mememe/insert-zwsp)  ; ZWSP
 (keymap-set mememe/insert-map "z"   #'mememe/insert-zwsp)  ; ZWSP
-
 (keymap-set global-map (format "%si" mememe/key-prefix) mememe/insert-map)
 (keymap-set global-map "C-c i" mememe/insert-map)
 
@@ -910,27 +901,25 @@ Properties are stripped, non-coniiguous regions are concatenated."
 (keymap-set global-map (format "%st" mememe/key-prefix) mememe/toggle-map)
 (keymap-set global-map "C-c t" mememe/toggle-map)
 
-(defvar-keymap mememe/search-and-replace-map
-  :repeat t
-  "H-s" #'search-forward-regexp
-  "s"   #'search-forward-regexp
-  "H-r" #'query-replace-regexp
-  "r"   #'query-replace-regexp)
+(defvar-keymap mememe/search-and-replace-map :repeat t)
+(keymap-set mememe/search-and-replace-map "H-s" #'search-forward-regexp)
+(keymap-set mememe/search-and-replace-map "s"   #'search-forward-regexp)
+(keymap-set mememe/search-and-replace-map "H-r" #'query-replace-regexp)
+(keymap-set mememe/search-and-replace-map "r"   #'query-replace-regexp)
 (keymap-set global-map
             (format "%ss" mememe/key-prefix)
             mememe/search-and-replace-map)
 (keymap-set global-map "C-c s" mememe/search-and-replace-map)
 
-(defvar-keymap mememe/misc-map
-  "H-<home>" #'mememe/dump-buffer-local-variables
-  "<home>"   #'mememe/dump-buffer-local-variables
-  "H-a"      #'align-regexp
-  "a"        #'align-regexp
-  "H-w H-p"  #'mememe/wikipedia-region-or-word
-  "w p"      #'mememe/wikipedia-region-or-word
-  "H-w H-t"  #'mememe/wiktionary-region-or-word
-  "w t"      #'mememe/wiktionary-region-or-word)
-
+(defvar-keymap mememe/misc-map)
+(keymap-set mememe/misc-map "H-<home>" #'mememe/dump-buffer-local-variables)
+(keymap-set mememe/misc-map "<home>"   #'mememe/dump-buffer-local-variables)
+(keymap-set mememe/misc-map "H-a"      #'align-regexp)
+(keymap-set mememe/misc-map "a"        #'align-regexp)
+(keymap-set mememe/misc-map "H-w H-p"  #'mememe/wikipedia-region-or-word)
+(keymap-set mememe/misc-map "w p"      #'mememe/wikipedia-region-or-word)
+(keymap-set mememe/misc-map "H-w H-t"  #'mememe/wiktionary-region-or-word)
+(keymap-set mememe/misc-map "w t"      #'mememe/wiktionary-region-or-word)
 (keymap-set global-map (format "%sx" mememe/key-prefix) mememe/misc-map)
 (keymap-set global-map "C-c x" mememe/misc-map)
 
@@ -965,7 +954,14 @@ Properties are stripped, non-coniiguous regions are concatenated."
 ;;;; `conf-mode'
 
 (defconst mememe/equals-header-regexp
-  "[^=]\\(\\(=\\{2,\\}\\) [A-Z0-9\\.!?:;()\" -]+ \\2\\)[^=]"
+  (rx (not "=")                         ; no leading =s
+      (group-n 1
+        (group-n 2 (>= 2 "="))          ; some # of =s
+        " "
+        (one-or-more (or upper digit punct " "))
+        " "
+        (backref 2))                    ; same # of =s as the left side
+      (not "="))                        ; and no more
   "Match strings of uppercase letters surrounded by balanced \"=\" signs.
 
 Actual match is contained within capture group 1.")
@@ -1268,6 +1264,22 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 ;; Not the best for scaling text, but not the worst.
 
 (use-package face-remap :custom (global-text-scale-adjust-resizes-frames t))
+
+;;;; `titlecase'
+
+;; I'm sick of doing `capitalize-region' and then manually adjusting. This is,
+;; as it's author states, a best-effort attempt to do it right. I appreciate
+;; that.
+
+(use-package titlecase
+  :vc (:url "https://codeberg.org/acdw/titlecase.el.git"
+            :rev :newest)
+  :ensure t
+  :custom
+  ;; Wikipedia-style is actually already the default, but I respect it enough
+  ;; that I want to explicitly agree.
+  ((titlecase-style 'wikipedia)
+   (titlecase-downcase-sentences t)))
 
 ;;;; `tool-bar-mode' (built-in)
 
@@ -1579,6 +1591,8 @@ parents) is listed in `mememe/display-line-numbers-exempt-modes'."
 (use-package org-contrib :ensure t :after org-mode)
 
 (use-package org-present :ensure t :after org-mode)
+
+(use-package citeproc :ensure t :after org-mode)
 
 (use-package ol-tel :after org-mode)
 
