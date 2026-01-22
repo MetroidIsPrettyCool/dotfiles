@@ -1,0 +1,35 @@
+# ==== MISC. BINARIES ====
+bin/
+build/
+target/
+
+a.out
+
+# ==== MISC. OTHER ARTIFACTS ====
+
+*.stderr
+
+# ==== EMACS ====
+
+# Backup files
+*~
+
+# Autosave files
+\#*\#
+
+# Lockfiles
+.\#*
+
+# Personal .dir-locals.el
+.dir-locals-2.el
+
+# ==== ECLIPSE LANGUAGE SERVER (JDTLS) ====
+.settings/
+
+.classpath
+.factorypath
+.project
+
+# Local Variables:
+# mode: gitignore
+# End:

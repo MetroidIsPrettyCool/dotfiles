@@ -1,13 +1,18 @@
 set $mod Mod4
 floating_modifier $mod
 
-# ========== APPEARANCE ==========
+# ===== APPEARANCE =====
 
-# ===== FONT =====
+# ========== TITLE BAR ==========
 
-font pango:Source Code Pro 0
+default_border none
+default_floating_border none
+# for_window [class="^.*"] border none
 
-# ===== COLORS =====
+# font pango:SauceCodePro NFM 10
+font pango:SauceCodePro NFM 0
+
+# ========== COLORS ==========
 
 set_from_resource $fg i3wm.color7 #f0f0f0
 set_from_resource $bg i3wm.color2 #f0f0f0
@@ -21,15 +26,14 @@ client.placeholder      $bg     $bg     $fg  $bg       $bg
 
 client.background       $bg
 
-# ===== GAPS =====
+# ========== GAPS ==========
 
-for_window [class="^.*"] border none
 gaps inner 0
 gaps outer 4
 
-# ========== WORKSPACES ==========
+# ===== WORKSPACES =====
 
-# ===== NAMES =====
+# ========== NAMES ==========
 
 set $ws1 "1"
 set $ws2 "2"
@@ -45,27 +49,39 @@ set $ws9 "9"
 # discord (guess what)
 set $ws10 "10"
 
-# ===== WORKSPACE-MONITOR ASSIGNMENTS =====
+# ========== WORKSPACE-MONITOR ASSIGNMENTS ==========
 
-workspace $ws1 output DP-4.8
-workspace $ws2 output DP-4.8
-workspace $ws3 output DP-4.8
-workspace $ws4 output DP-4.8
-workspace $ws5 output DP-4.8
-workspace $ws6 output HDMI-0
-workspace $ws7 output HDMI-0
-workspace $ws8 output HDMI-0
-workspace $ws9 output HDMI-0
-workspace $ws10 output HDMI-0
+# workspace $ws1 output DP-4.8
+# workspace $ws2 output DP-4.8
+# workspace $ws3 output DP-4.8
+# workspace $ws4 output DP-4.8
+# workspace $ws5 output DP-4.8
+# workspace $ws6 output HDMI-0
+# workspace $ws7 output HDMI-0
+# workspace $ws8 output HDMI-0
+# workspace $ws9 output HDMI-0
+# workspace $ws10 output HDMI-0
 
-# ===== WINDOW-WORKSPACE ASSIGNMENTS =====
+workspace $ws1 output HDMI-0
+workspace $ws2 output HDMI-0
+workspace $ws3 output HDMI-0
+workspace $ws4 output HDMI-0
+workspace $ws5 output HDMI-0
+workspace $ws6 output DP-1
+workspace $ws7 output DP-1
+workspace $ws8 output DP-1
+workspace $ws9 output DP-1
+workspace $ws10 output DP-1
+
+# ========== WINDOW-WORKSPACE ASSIGNMENTS ==========
 
 assign [class="^thunderbird$"] $ws8
+assign [class="^org\.mozilla\.Thunderbird$"] $ws8
 assign [class="^Deadbeef$"] $ws9
 assign [class="^vlc$"] $ws9
 assign [class="^discord$"] $ws10
 
-# ========== WINDOW FLOATING ASSIGNMENTS ==========
+# ===== WINDOW FLOATING ASSIGNMENTS =====
 
 for_window [window_role="pop-up"] floating enable
 for_window [window_role="task_dialog"] floating enable
@@ -90,9 +106,9 @@ for_window [class="minecraft-pi"] floating enable
 
 for_window [class="software-coley-recaf-launcher-LauncherGui"] floating enable
 
-# ========== KEYBINDS ==========
+# ===== KEYBINDS =====
 
-# ===== I3 CONTROLS =====
+# ========== I3 CONTROLS ==========
 
 bindsym $mod+Shift+c reload
 
@@ -100,7 +116,7 @@ bindsym $mod+Shift+r restart
 
 bindsym $mod+Shift+e exit
 
-# ===== WORKSPACE CONTROLS =====
+# ========== WORKSPACE CONTROLS ==========
 
 # switch to workspace
 bindsym $mod+1 workspace number $ws1
@@ -127,10 +143,13 @@ bindsym $mod+Shift+9 move container to workspace number $ws9
 bindsym $mod+Shift+0 move container to workspace number $ws10
 
 # move focused workspace to monitor
-bindsym $mod+Mod1+1 move workspace to output DP-4.8
-bindsym $mod+Mod1+2 move workspace to output HDMI-0
+# bindsym $mod+Mod1+1 move workspace to output DP-4.8
+# bindsym $mod+Mod1+2 move workspace to output HDMI-0
 
-# ===== WINDOW CONTROLS =====
+bindsym $mod+Mod1+1 move workspace to output HDMI-0
+bindsym $mod+Mod1+2 move workspace to output DP-1
+
+# ========== WINDOW CONTROLS ==========
 
 # KILL
 bindsym $mod+Shift+q kill
@@ -177,7 +196,7 @@ mode "resize" {
 
 bindsym $mod+r mode "resize"
 
-# ===== MULTIMEDIA CONTROLS =====
+# ========== MULTIMEDIA CONTROLS ==========
 
 # volume controls
 bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume $(pactl get-default-sink) +5%
@@ -194,7 +213,7 @@ bindsym XF86AudioNext exec --no-startup-id "playerctl next"
 bindsym XF86AudioPrev exec --no-startup-id "playerctl previous"
 # NOTE: you can append --player=vlc to only affect vlc, used to have that in, now don't
 
-# ===== APPLICATION SHORTCUTS =====
+# ========== APPLICATION SHORTCUTS ==========
 
 # terminal
 bindsym $mod+Return exec --no-startup-id alacritty
@@ -209,7 +228,7 @@ bindsym $mod+Print exec --no-startup-id xfce4-screenshooter -s ~/Pictures/screen
 # start an emacs client
 bindsym $mod+t exec --no-startup-id emacsclient --alternate-editor= --create-frame
 
-# ===== MISC. SCRIPT SHORTCUTS =====
+# ========== MISC. SCRIPT SHORTCUTS ==========
 
 # for games with weird mouse wheel issues (KSP), inverts the scroll direction of my MX Ergo
 bindsym $mod+Home exec --no-startup-id bash "${MY_SCRIPTS_DIR}/toggle-mousewheel-direction.sh"
@@ -221,6 +240,9 @@ bindsym $mod+u exec --no-startup-id setxkbmap us
 # paste from clipboard with paste-xdotool.sh
 bindsym $mod+p exec --no-startup-id bash -c "xclip -out -selection clipboard | \"${MY_SCRIPTS_DIR}/paste-xdotool.sh\""
 
-# ===== START PROGRAMS! =====
+# paste from clipboard with paste-xdotool.sh
+bindsym $mod+End exec --no-startup-id click4ever
+
+# ========== START PROGRAMS! ==========
 
 exec --no-startup-id "${MY_SCRIPTS_DIR}/onstartup.sh"

@@ -38,6 +38,6 @@
         (set (make-local-variable var) (cdr entry))))
 
     (insert "Any copyright is dedicated to the Public Domain.\n")
-    (insert "http://creativecommons.org/publicdomain/zero/1.0/")
+    (insert "<http://creativecommons.org/publicdomain/zero/1.0/>")
     (comment-region (point-min) (point-max))
     (insert-into-buffer outer-buffer)))

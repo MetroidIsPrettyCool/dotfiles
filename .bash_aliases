@@ -17,8 +17,8 @@ alias alsamixer='/usr/bin/alsamixer -c 0'
 
 # ==== ALTERNATE NAMES FOR COMMON ARGUMENTS ====
 
-alias la='/usr/bin/ls -A'
-alias lal='/usr/bin/ls -Al'
+alias la='/usr/bin/ls --color=auto -A'
+alias lal='/usr/bin/ls --color=auto -Al'
 
 alias paclean='/usr/bin/sudo /usr/bin/pacman -R $(/usr/bin/pacman -Qdtq)'
 
@@ -67,7 +67,6 @@ dotfiles-git-update() (
     dotfiles-git add -u
     dotfiles-git add ~/.emacs.d/lisp/*.el
     dotfiles-git add ~/.emacs.d/snippets/
-    dotfiles-git add "${MY_SCRIPTS_DIR}"
     dotfiles-git commit -m "update $(date --universal)"
     dotfiles-git push github master
 )
@@ -82,9 +81,26 @@ alias script-ytmp3='"${MY_SCRIPTS_DIR}"/ytmp3.sh'
 alias script-update-system='"${MY_SCRIPTS_DIR}"/update-system.sh'
 alias script-manage-orphan-tilde-files='"${MY_SCRIPTS_DIR}"/manage-orphan-tilde-files.sh'
 
-# ==== MISC. SMALL FUNCTIONS ====
+# ==== DIRECTORY NAVIGATION ====
 
 cl() {
     cd "$@"
+    ls --color=auto -Al
+}
+
+cdu() {
+    if [[ ( $# -ne 1 ) || ( $1 = "-h" ) || ( $1 = "--help" ) ]]; then
+        printf 'cdu -- change directory up to some parent.\nusage: cdu [PARENT]\n'
+    fi
+
+    if [[ -z ${PWD+t} ]]; then
+        printf 'the $PWD environment variable is'\'' set, how'\''d that happen?\n'
+    fi
+
+    cd "${PWD%/${1%%/*}/*}/${1}" && pwd
+}
+
+clu() {
+    cdu "${@}"
     ls --color=auto -Al
 }

@@ -17,7 +17,7 @@ set -euxo pipefail
 
 declare -r java8_bin_java=/usr/lib/jvm/java-8-openjdk/bin/java
 
-declare -r retromcp_jar_dir=~/.local/share/retromcp
+declare -r retromcp_jar_dir=~/.local/lib/retromcp
 
 # ==== CODE ====
 

@@ -11,6 +11,9 @@ if [[ ! "${-}" =~ i ]]; then
     return
 fi
 
+# ==== NODE VERSION MANAGER ====
+source /usr/share/nvm/init-nvm.sh
+
 # ==== SHELL OPTIONS ====
 
 declare -x HISTFILE=~/.bash_history

@@ -15,7 +15,7 @@ set -euxo pipefail
 
 # ==== CONSTANTS ====
 
-declare -r recaf_jar_dir=~/.local/share/recaf-gui
+declare -r recaf_jar_dir=~/.local/lib/recaf-gui
 
 # ==== CODE ====
 

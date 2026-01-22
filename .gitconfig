@@ -1,0 +1,7 @@
+[user]
+	email = hahaihaveashare@gmail.com
+	name = HaHaIHaveAShare
+[credential]
+	helper = store
+[core]
+	excludesFile = ~/.gitignore-global

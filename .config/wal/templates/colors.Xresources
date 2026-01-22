@@ -66,7 +66,7 @@ XClock*secondColor: rgba:{color15.xrgba}
 ! Set depth to make transparency work.
 URxvt*depth: 32
 
-Gdraw.ScreenWidthInches: 14.7
+! Gdraw.ScreenWidthInches: 14.7
 Gdraw.GGadget.Popup.Font: 12pt SourceCodePro
 Gdraw.Background: white
 

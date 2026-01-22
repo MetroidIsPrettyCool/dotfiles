@@ -17,11 +17,11 @@ set -xuo pipefail
 
 # ==== CONSTANTS ====
 
-declare -r home_netctl_profile='trogdor'
+declare -r home_netctl_profile='home-home'
 
 # ==== CODE ====
 
-# == VERIFY ALL IS WELL ==
+# ======== VERIFY ALL IS WELL ========
 
 # restart networking profile, if it's not up
 
@@ -30,7 +30,7 @@ if ! netctl is-active "${home_netctl_profile}" &>/dev/null; then
     "${MY_SCRIPTS_DIR}"/wlanrestart.sh "${home_netctl_profile}"
 fi
 
-# == SET WALLPAPER AND GENERATE PROCEDURAL SYSTEM THEMES ==
+# ======== SET WALLPAPER AND GENERATE PROCEDURAL SYSTEM THEMES ========
 
 # # select a random background image and move it to .cache/randback
 # "${MY_SCRIPTS_DIR}"/randback.sh
@@ -38,24 +38,25 @@ fi
 # take whatever image is in .cache/randback and set it as wallpaper + generate system theme from it
 "${MY_SCRIPTS_DIR}"/themeback.sh
 
-# == START VARIOUS GUI-ONLY DAEMONS ==
-emacs --daemon          # eeeeeeemacs
+# ======== START VARIOUS GUI-ONLY DAEMONS ========
+# emacs --daemon          # eeeeeeemacs
 dunst &                 # notification daemon
 solaar -w hide &        # Logitech I/O device daemon
 blueberry-tray          # application for managing Bluetooth devices
 pcmanfm --daemon-mode & # file manager daemon, for background volume management, mostly
 picom &                 # compositor
 
-# == XCOWFORTUNE :) ==
+# ======== ORNAMENTATION ========
 xcowfortune &
+# xsnow &
 
-# == START SYSTEM INFORMATION BARS ==
+# ======== START SYSTEM INFORMATION BARS ========
 "${MY_SCRIPTS_DIR}"/launch-polybar.sh &
 
-# == START DEFAULT APPLICATIONS ==
-vlc &                                       # for media, assigned to workspace 9 in my i3 config
-discord &                                   # for IM, assigned to workspace 10 in my i3 config
-"${MY_SCRIPTS_DIR}"/launch-thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
+# ======== START DEFAULT APPLICATIONS ========
+# vlc &                                       # for media, assigned to workspace 9 in my i3 config
+# discord &                                   # for IM, assigned to workspace 10 in my i3 config
+# "${MY_SCRIPTS_DIR}"/launch-thunderbird.sh & # for mail, assigned to workspace 8 in my i3 config
 
 # We can only run one of these "banish" scripts at a time, as they need to have exclusive access to `i3-msg` to focus
 # their eponymous applications and move them to their destination workspaces.
@@ -64,10 +65,10 @@ discord &                                   # for IM, assigned to workspace 10 i
 # problem
 
 # Emacs client with org-mode to-do list open, auto-moved to workspace 2 by the script
-timeout 15s "${MY_SCRIPTS_DIR}"/banish-todolist.sh
+# timeout 15s "${MY_SCRIPTS_DIR}"/banish-todolist.sh
 
 # Firefox web browser, auto-moved to workspace 1 by the script
 "${MY_SCRIPTS_DIR}"/banish-firefox.sh
 
-# == FINAL TOUCHES ==
+# ======== FINAL TOUCHES ========
 i3-msg --quiet 'workspace 1'

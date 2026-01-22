@@ -11,7 +11,7 @@ ${5:${6:$(unless (equal yas-text "") ";; Author: ")}${6:$4}${6:$(unless (equal y
 ")}${7:$(unless (equal yas-text "") ";; Maintainer: ")}${7:$6}${7:$(unless (equal yas-text "") "
 ")}${8:$(unless (equal yas-text "") ";; Created: ")}${8:`(format-time-string "%e %b %Y")`}${8:$(unless (equal yas-text "") "
 ")}${9:$(unless (equal yas-text "") ";; Version: ")}${9:0.1.0}${9:$(unless (equal yas-text "") "
-")}${10:$(unless (equal yas-text "") ";; Package-Requires: (")}${10:cl-lib}${10:$(unless (equal yas-text "") ")
+")}${10:$(unless (equal yas-text "") ";; Package-Requires: (")}${10:`(format "(emacs \"%s\")" emacs-version)`}${10:$(unless (equal yas-text "") ")
 ")}${11:$(unless (equal yas-text "") ";; Homepage: ")}${11:https://www.example.com}${11:$(unless (equal yas-text "") "
 ")}${12:$(unless (equal yas-text "") ";; Keywords: ")}${12:foo bar baz}${12:$(unless (equal yas-text "") "
 ")}

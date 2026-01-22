@@ -40,7 +40,7 @@
 
      (insert "This Source Code Form is subject to the terms of the Mozilla Public\n")
      (insert "License, v. 2.0. If a copy of the MPL was not distributed with this\n")
-     (insert "file, You can obtain one at https://mozilla.org/MPL/2.0/.\n\n")
+     (insert "file, You can obtain one at <https://mozilla.org/MPL/2.0/>.\n\n")
      (insert "Copyright (c)")
      (insert " $\{1:`(format-time-string \"%Y\")`\}")
      (insert " $\{2:`(or user-full-name \"\")`\}")
